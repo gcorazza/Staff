@@ -3,7 +3,7 @@
 #include "globals.h"
 
 
-void clearLEDsInvisible() {
+void clearLEDsInvisible(CRGB leds[]) {
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CRGB::Black;
   }
@@ -83,15 +83,15 @@ float interpolate(float tl, float tr, float bl, float br, float xP, float yP) {
 //   animate( amount, scene, 3, 5, 1);
 // }
 
-void setChecked(int i, CRGB color) {
+void setChecked(CRGB leds[], int i, CRGB color) {
   if (i < 0 || i >= NUM_LEDS) {
     return;
   }
   leds[i] = color;
 }
 
-void lightning(CRGB leds[], int from, int till, int widthFront, int widthBack, CRGB color, float framePercent) {
-  clearLEDsInvisible();
+void lightningFrame(CRGB leds[], int from, int till, int widthFront, int widthBack, CRGB color, float framePercent) {
+  clearLEDsInvisible(leds);
 
   int widthLeft;
   int widthRight;
@@ -100,14 +100,21 @@ void lightning(CRGB leds[], int from, int till, int widthFront, int widthBack, C
   int till_;
 
   if (from > till) {
-    widthLeft = widthBack;
-    widthRight = widthFront;
-  } else {
     widthLeft = widthFront;
     widthRight = widthBack;
+
+    from_ = from + widthLeft;
+    till_ = till - widthRight;
+  } else {
+    widthLeft = widthBack;
+    widthRight = widthFront;
+
+    from_ = from - widthRight;
+    till_ = till + widthLeft;
+    // Serial.println(till_);
   }
 
-  float at = from + (till - from) * framePercent;
+  float at = from_ + (till_ - from_) * framePercent;
 
   // Serial.println(framePercent);
   // Serial.println((int)at);
@@ -117,32 +124,33 @@ void lightning(CRGB leds[], int from, int till, int widthFront, int widthBack, C
   float mr = 1.0 / widthRight;
 
   for (float ati = at - widthLeft; ati <= at + widthRight + 1; ati++) {
-    int absAtI = (int)ati;
-    float distance = abs(absAtI - at);
-    float h = absAtI < at ? 1 - (distance * ml) : 1 - (distance * mr);
-    h = h < 0 ? 0 : h;
-    // Serial.println("h");
-    // Serial.println(h);
-    setChecked(absAtI, color % (h * h * h * 100));
+    if (min(from, till) < ati && min(from, till) + abs(from - till) > ati) {
+      int absAtI = (int)ati;
+      float distance = abs(absAtI - at);
+      float h = absAtI < at ? 1 - (distance * ml) : 1 - (distance * mr);
+      h = h < 0 ? 0 : h;
+      // Serial.println("h");
+      // Serial.println(h);
+      setChecked(leds, absAtI, color % (h * h * h * 100));
+    }
   }
 }
 
-void animateLightning(CRGB leds[], int from, int till, int widthFront, int widthBack, CRGB color, long durationMs) {
-  long start = millis();
-  long now = millis();
+bool isBlack(CRGB color) {
+  return color.r == 0 && color.g == 0 && color.b == 0;
+}
 
-  while (now - start < durationMs) {
-    // Serial.println("---");
-
-    // Serial.println(durationMs);
-    // Serial.println(((now - start)));
-    // double t = 1.0 * (now - start);
-    // Serial.println(t, 3);
-
-    double framePercent = ((double)(now - start)) / durationMs;
-    // Serial.println(framePercent, 3);
-    lightning(leds, from, till, widthFront, widthBack, color, framePercent);
-    FastLED.show();
-    now = millis();
+void addToFirst(CRGB leds1[], CRGB leds2[]) {
+  for (int i = 0; i < NUM_LEDS; i++) {
+    if (isBlack(leds1[i])) {
+      leds1[i] = leds2[i];
+    }
+    else if (isBlack(leds2[i])) {}
+    else {
+      leds1[i] = CRGB(
+        (leds1[i].r + leds2[i].r) / 2,
+        (leds1[i].g + leds2[i].g) / 2,
+        (leds1[i].b + leds2[i].b) / 2);
+    }
   }
 }

@@ -14,9 +14,31 @@ void setup() {
 }
 
 void loop() {
-  animateLightning(leds, 0, 120, 10, 3, CRGB(200,50,0), 100000);
+  lightningStrike();
   delay(1000);
 }
 
 void fireWater() {
+}
+
+void lightningStrike() {
+  int from = 0;
+  int till = 120;
+  int widthFront = 2;
+  int widthBack = 10;
+  CRGB color = CRGB::Aqua;
+  int durationMs =100;
+  long start = millis();
+  long now = millis();
+
+  while (now - start < durationMs) {
+    double framePercent = ((double)(now - start)) / durationMs;
+    CRGB leds2[NUM_LEDS];
+    lightningFrame(leds, from, till, widthFront, widthBack, color, framePercent);
+    lightningFrame(leds, from, till, widthFront, widthBack, color, framePercent);
+    FastLED.show();
+    now = millis();
+  }
+  clearLEDsInvisible(leds);
+  FastLED.show();
 }
