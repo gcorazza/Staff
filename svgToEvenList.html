@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="taramath.js"></script>
+</head>
+<body>
+<textarea id="pointInput" onkeyup="recalc();" style="height: 200px;">
+0 0
+0.5 0.5
+1 1
+</textarea>
+<input id="arraySize" onkeyup="recalcSvgToEvenList();" type="number" value="20">
+
+<textarea id="svgToEvenList" onkeyup="recalcSvgToEvenList();" style="height: 200px;">
+59.9996452331543,206.9970612061024
+61.308939792215824,197.14710118988296
+65.15406109113246,187.92780934673007
+70.63435792922974,179.56852363988756
+77.24886942654848,172.07909983076854
+84.67317344562616,165.3766902694706
+92.66444803339255,159.38164497774312
+101.08315343689173,153.9906280157718
+109.8156344563613,149.12823005389717
+118.79629405390006,144.72133309887886
+127.95805948216002,140.71931860880332
+137.26907829336415,137.07078694010968
+146.70396083396918,133.73467994317795
+156.21685877947493,130.6851687712527
+165.81746098867188,127.88488000912949
+175.48106580071362,125.31327881503114
+185.19669362995774,122.94959368560549
+194.95301222057606,120.77640616893522
+204.7639495901676,118.77384399553605
+214.58030081447214,116.93691775554471
+224.44812827212445,115.24406306021014
+234.28140539330042,113.50721617232225
+244.14236801584937,111.79120993502704
+254.0043714608252,110.21188979424537
+263.9183785059836,108.76572283545669
+273.82579647405475,107.46551833878719
+283.7551001504301,106.31078369529516
+293.70069957171336,105.30533237240161
+303.67894011803696,104.45003409892394
+313.6380497314967,103.7497017107252
+323.6339506031215,103.19893024364501
+333.61861065583304,102.79628337879666
+343.60898255446295,102.53230076646649
+353.6115322847269,102.39280471254489
+363.6229943578248,102.35561811720137
+373.6139251390056,102.3863663656251
+383.6182272245376,102.4337777614064
+393.6211013293895,102.42198450524243
+403.616397902835,102.24000078202504
+</textarea>
+
+<div id="plot"></div>
+<div id="arrayString"></div>
+
+<a href="https://shinao.github.io/PathToPoints/">SVG to Pointlist</a>
+
+<script>
+    // recalc();
+    // normalize();
+
+    recalcSvgToEvenList();
+
+    function recalcSvgToEvenList() {
+        let points = restructurePoints(getPoints(document.getElementById("svgToEvenList").value));
+        let size = Number(document.getElementById("arraySize").value);
+        console.log(size);
+        console.log(points);
+        let normalize1 = normalize(points);
+        console.log(normalize1);
+        let evenOut1 = evenOut(normalize1, size);
+        showArray(evenOut1);
+    }
+
+    function showArray(toShow) {
+        document.getElementById("arrayString").textContent = toShow.join(", ");
+    }
+
+    function restructurePoints(points) {
+        const pointsRe = [];
+        for (let i = 0; i < points[0].length; i++) {
+            pointsRe.push([points[0][i], points[1][i]]);
+        }
+        return pointsRe;
+    }
+
+    function normalize(data) {
+        let minMax1 = minMax(data);
+        const scalex = Math.abs(minMax1.maxx - minMax1.minx);
+        const scaley = Math.abs(minMax1.maxy - minMax1.miny);
+        return data.map(value => [(value[0] - minMax1.minx) / scalex, 1 - (value[1] - minMax1.miny) / scaley]);
+    }
+
+    function minMax(data) {
+        var minx = 9999999;
+        var miny = 9999999;
+        var maxx = 0;
+        var maxy = 0;
+
+        data.forEach(point => {
+            if (point[0] < minx) {
+                minx = point[0];
+            }
+            if (point[1] < miny) {
+                miny = point[1];
+            }
+            if (point[0] > maxx) {
+                maxx = point[0];
+            }
+            if (point[1] > maxy) {
+                maxy = point[1];
+            }
+        })
+        return {
+            minx, miny, maxx, maxy
+        };
+    }
+
+    function recalc() {
+        let points = getPoints(document.getElementById("pointInput").value);
+        var x = points[0];
+        var y = points[1];
+        console.log(x);
+        console.log(y);
+
+        var n = Math.min(x.length, y.length);
+        var p = Sort.quick(x);
+        var d = p[n - 1] - p[0];
+        var t = [];
+        for (var h = p[0]; h <= p[n - 1]; h += 0.05 * d) t.push(h);
+
+        var s = Interpolate.cubic(x, y, t);
+
+        document.getElementById("arrayString").textContent = "aksudr";
+
+        if (typeof (s) != "string") {
+            var Z = [];
+            for (var k = 0; k < t.length; k++) Z.push([t[k], s[k]]);
+            var T = [];
+            for (var k = 0; k < n; k++) T.push([x[k], y[k]]);
+            Plot.init("plot", 600, 300);
+            Plot.caption("x-Achse", "y-Achse");
+            Plot.options("line");
+            Plot.add_list(Z);
+            Plot.options("dots");
+            Plot.add_list(T);
+            Plot.draw();
+        }
+
+    }
+
+    function getPoints(pointsString) {
+        let split = pointsString.split("\n");
+        const xs = [];
+        const ys = [];
+
+        split.forEach(value => {
+            let point = getPoint(value);
+            if (point) {
+                xs.push(point[0]);
+                ys.push(point[1]);
+            }
+        });
+
+        return [xs, ys];
+    }
+
+    function getPoint(str) {
+        let split = str.split(new RegExp(`[ |,]`));
+        if (split.length < 2) {
+            return;
+        }
+        return [Number(split[0]), Number(split[1])]
+    }
+
+
+    function evenOut(uneven, size) {
+        uneven.sort((a, b) => {
+            if (a[0] === b[0]) {
+                return 0;
+            }
+            return a[0] - b[0];
+        });
+
+        const even = [];
+        for (var i = 0; i < size; i++) {
+            even.push(unevenFrameModifier(uneven, 1.0 / size * i));
+        }
+        return even;
+    }
+
+    function unevenFrameModifier(points, percentTime) {
+        for (let i = 1; i < points.length; i++) {
+            if (percentTime >= points[i - 1][0] && percentTime <= points[i][0]) {
+                let percentBetween = (percentTime - points[i - 1][0]) / (points[i][0] - points[i - 1][0]);
+                return interpolate(points[i - 1][1], points[i][1], percentBetween);
+            }
+        }
+    }
+
+    function interpolate(l, r, percent) {
+        return l + ((r - l) * percent);
+    }
+
+    function frameModifier(points, size, percentTime) {
+        // Serial.println("---->");
+        const left = Math.floor(percentTime * (size - 1));
+        // Serial.println(percentTime);
+        const right = left + 1;
+
+        const wx = 1.0 / (size - 1);
+        const sx = left * wx;
+        const xP = (percentTime - sx) / wx;
+        // Serial.println(xP);
+        // Serial.println(left);
+        // Serial.println(points[left] + ((points[right] - points[left]) * xP));
+
+        return points[left] + ((points[right] - points[left]) * xP);
+    }
+
+</script>
+</body>
+</html>
