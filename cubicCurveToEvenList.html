@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="taramath.js"></script>
+</head>
+<body>
+<textarea id="pointInput" onkeyup="recalc();" style="height: 200px;">
+0 0
+0.5 0.5
+1 1
+</textarea>
+
+<div id="plot"></div>
+<div id="arrayString"></div>
+
+
+<script>
+    recalc();
+
+    function showArray(toShow) {
+        document.getElementById("arrayString").textContent = toShow.join(", ");
+    }
+
+    function recalc() {
+        let points = getPoints(document.getElementById("pointInput").value);
+        var x = points[0];
+        var y = points[1];
+        console.log(x);
+        console.log(y);
+
+        var n = Math.min(x.length, y.length);
+        var p = Sort.quick(x);
+        var d = p[n - 1] - p[0];
+        var t = [];
+        for (var h = p[0]; h <= p[n - 1]; h += 0.05 * d) t.push(h);
+
+        var s = Interpolate.cubic(x, y, t);
+
+        document.getElementById("arrayString").textContent = "aksudr";
+
+        if (typeof (s) != "string") {
+            var Z = [];
+            for (var k = 0; k < t.length; k++) Z.push([t[k], s[k]]);
+            var T = [];
+            for (var k = 0; k < n; k++) T.push([x[k], y[k]]);
+            Plot.init("plot", 600, 300);
+            Plot.caption("x-Achse", "y-Achse");
+            Plot.options("line");
+            Plot.add_list(Z);
+            Plot.options("dots");
+            Plot.add_list(T);
+            Plot.draw();
+        }
+
+    }
+
+    function getPoints(pointsString) {
+        let split = pointsString.split("\n");
+        const xs = [];
+        const ys = [];
+
+        split.forEach(value => {
+            let point = getPoint(value);
+            if (point) {
+                xs.push(point[0]);
+                ys.push(point[1]);
+            }
+        });
+
+        return [xs, ys];
+    }
+
+    function getPoint(str) {
+        let split = str.split(new RegExp(`[ |,]`));
+        if (split.length < 2) {
+            return;
+        }
+        return [Number(split[0]), Number(split[1])]
+    }
+
+</script>
+</body>
+</html>
