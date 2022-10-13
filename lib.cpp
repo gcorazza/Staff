@@ -91,8 +91,6 @@ void setChecked(CRGB leds[], int i, CRGB color) {
 }
 
 void lightningFrame(CRGB leds[], int from, int till, int widthFront, int widthBack, CRGB color, float framePercent) {
-  clearLEDsInvisible(leds);
-
   int widthLeft;
   int widthRight;
 
@@ -144,13 +142,28 @@ void addToFirst(CRGB leds1[], CRGB leds2[]) {
   for (int i = 0; i < NUM_LEDS; i++) {
     if (isBlack(leds1[i])) {
       leds1[i] = leds2[i];
-    }
-    else if (isBlack(leds2[i])) {}
-    else {
+    } else if (isBlack(leds2[i])) {
+    } else {
       leds1[i] = CRGB(
         (leds1[i].r + leds2[i].r) / 2,
         (leds1[i].g + leds2[i].g) / 2,
         (leds1[i].b + leds2[i].b) / 2);
     }
   }
+}
+
+float frameModifier(float points[], int size, float percentTime) {
+  // Serial.println("---->");
+  int left = floor(percentTime * (size - 1));
+  // Serial.println(percentTime);
+  int right = left + 1;
+
+  float wx = 1.0 / (size - 1);
+  float sx = left * wx;
+  float xP = (percentTime - sx) / wx;
+  // Serial.println(xP);
+  // Serial.println(left);
+  // Serial.println(points[left] + ((points[right] - points[left]) * xP));
+
+  return points[left] + ((points[right] - points[left]) * xP);
 }
