@@ -4,3 +4,4 @@ void lightningFrame(CRGB leds[], int from, int till, int widthFront, int widthBa
 void clearLEDsInvisible(CRGB leds[]);
 void addToFirst(CRGB leds1[], CRGB leds2[]);
 float frameModifier(float points[], int size, float percentTime);
+void setBulk(CRGB leds[], int from, int to, CRGB color);

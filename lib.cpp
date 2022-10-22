@@ -24,70 +24,73 @@ float interpolate(float tl, float tr, float bl, float br, float xP, float yP) {
 }
 
 
-// template<typename TwoD>
-// void animate(CRGB leds[], int amount, TwoD& scene, int rows, int cols, float sec) {
-//   long startTime = millis();
-//   float percentTime = 0;
-//   while (percentTime < 1) {
-//     percentTime = ((float)(millis() - startTime)) / (sec * 1000);
-//     if (percentTime > 1) {
-//       percentTime = 1;
-//     }
-//     setFrame(leds, amount, scene, rows, cols, percentTime);
-//     FastLED.show();
-//     // delay(10000000);
-//   }
-// }
+template<typename TwoD>
+void animate(CRGB leds[], int amount, TwoD& scene, int rows, int cols, float sec) {
+  long startTime = millis();
+  float percentTime = 0;
+  while (percentTime < 1) {
+    percentTime = ((float)(millis() - startTime)) / (sec * 1000);
+    if (percentTime > 1) {
+      percentTime = 1;
+    }
+    setFrame(leds, amount, scene, rows, cols, percentTime);
+    FastLED.show();
+    // delay(10000000);
+  }
+}
 
-// template<typename TwoD>
-// void setFrame(CRGB leds[], int amount, TwoD& scene, int rows, int cols, float percentTime) {
-//   int tly = floor(percentTime * (rows - 1));
+template<typename TwoD>
+void setFrame(CRGB leds[], int amount, TwoD& scene, int rows, int cols, float percentTime) {
+  int tly = floor(percentTime * (rows - 1));
 
-//   for (int x = 0; x < amount; x++) {
-//     float percentScene = (float)(x) / amount;
+  for (int x = 0; x < amount; x++) {
+    float percentScene = (float)(x) / amount;
 
-//     int tlx = floor(percentScene * (cols - 1));
+    int tlx = floor(percentScene * (cols - 1));
 
-//     float wx = 1.0 / (cols - 1);
-//     float wy = 1.0 / (rows - 1);
-//     float sx = tlx * wx;
-//     float sy = tly * wy;
-//     float xP = (percentScene - sx) / wx;
-//     float yP = (percentTime - sy) / wy;
+    float wx = 1.0 / (cols - 1);
+    float wy = 1.0 / (rows - 1);
+    float sx = tlx * wx;
+    float sy = tly * wy;
+    float xP = (percentScene - sx) / wx;
+    float yP = (percentTime - sy) / wy;
 
-//     float inter = interpolate(scene[tlx][tly], scene[tlx + 1][tly],
-//                               scene[tlx][tly + 1], scene[tlx + 1][tly + 1],
-//                               xP, yP);
-//     int rgb = (int)(inter * inter * inter * 255);
-//     leds[x] = CRGB(rgb, rgb, rgb);
+    float inter = interpolate(scene[tlx][tly], scene[tlx + 1][tly],
+                              scene[tlx][tly + 1], scene[tlx + 1][tly + 1],
+                              xP, yP);
+    int rgb = (int)(inter * inter * inter * 255);
+    leds[x] = CRGB(rgb, rgb, rgb);
 
-//     // Serial.println("---->");
-//     // Serial.println(percentTime);
-//     // Serial.print(x);
-//     // Serial.print(":");
-//     // Serial.println(inter);
-//     // Serial.println("<----");
-//   }
-// }
+    // Serial.println("---->");
+    // Serial.println(percentTime);
+    // Serial.print(x);
+    // Serial.print(":");
+    // Serial.println(inter);
+    // Serial.println("<----");
+  }
+}
 
 
 // void test(int amount) {
 
 //   float scene[5][3]{
 //     { 0, 1, 0 },
-//     { 0, 1, 0 },
-//     { 0, 1, 0 },
-//     { 0, 1, 0 },
-//     { 0, 1, 0 },
 //   };
 //   animate( amount, scene, 3, 5, 1);
 // }
+
 
 void setChecked(CRGB leds[], int i, CRGB color) {
   if (i < 0 || i >= NUM_LEDS) {
     return;
   }
   leds[i] = color;
+}
+
+void setBulk(CRGB leds[], int from, int to, CRGB color) {
+  for (int i = from; i <= to; i++) {
+    setChecked(leds, i, color);
+  }
 }
 
 void lightningFrame(CRGB leds[], int from, int till, int widthFront, int widthBack, CRGB color, float framePercent) {
