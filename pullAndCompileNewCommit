@@ -1,0 +1,32 @@
+#!/bin/sh
+
+pathToArduino="/opt/arduino-1.8.19/arduino"
+branch=""
+
+getBranchFromFetch()
+{
+   lastLine=$(echo $1 | tail -n 1)
+   branch=$(echo "$lastLine" | sed -n -e 's/^.*origin\///p')
+}
+
+compileAndUpload(){
+   echo 'Compile and Upload'
+   $pathToArduino --upload staff/sketch.ino
+}
+
+while true
+do
+   gitFetch=$(git fetch 2>&1)
+   date
+   if [ -z "$gitFetch" ]; then
+      echo "Nothing new"
+   else
+      echo "Fetched:\n $gitFetch"
+      getBranchFromFetch "$gitFetch"
+      git checkout "$branch" && git pull && compileAndUpload
+   fi
+   
+   gitFetch=""
+   
+   sleep 1
+done
