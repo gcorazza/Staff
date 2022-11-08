@@ -1,3 +1,7 @@
+#ifdef MOCKARDUIUNOENV
+    Serial = 0;
+#endif
+
 #include "FastLED.h"
 #include "globals.h"
 #include "lib.h"
