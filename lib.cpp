@@ -71,15 +71,6 @@ void setFrame(CRGB leds[], int amount, TwoD& scene, int rows, int cols, float pe
 }
 
 
-// void test(int amount) {
-
-//   float scene[5][3]{
-//     { 0, 1, 0 },
-//   };
-//   animate( amount, scene, 3, 5, 1);
-// }
-
-
 void setChecked(CRGB leds[], int i, CRGB color) {
   if (i < 0 || i >= NUM_LEDS) {
     return;
