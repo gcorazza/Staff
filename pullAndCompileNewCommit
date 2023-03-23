@@ -16,10 +16,10 @@ compileAndUpload(){
 
 while true
 do
-   #date
+   date
    gitFetch=$(git fetch 2>&1)
    if [ -z "$gitFetch" ]; then
-#      echo "Nothing new"
+      echo "Nothing new"
        :
    else
       echo "Fetched:\n $gitFetch"
