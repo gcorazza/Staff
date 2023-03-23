@@ -18,6 +18,7 @@ void loop() {
 //  slowLeftRight();
 //  lightningStrike();
    setBulk(leds, 100, 120, CRGB(150,150,150));
+   FastLED.show();
   // overlapping();
   // fast();
   // fireWater();
