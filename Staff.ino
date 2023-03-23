@@ -15,13 +15,13 @@ void setup() {
 }
 
 void loop() {
-  // lightningStrike();
+//  slowLeftRight();
+  lightningStrike();
   // setBulk(leds, 100, 120, CRGB(150,150,150));
-  overlapping();
+  // overlapping();
   // fast();
   // fireWater();
-  slowLeftRight();
-  FastLED.show();
+  // FastLED.show();
 }
 
 float sin01(float x) {

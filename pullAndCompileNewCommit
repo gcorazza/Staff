@@ -1,6 +1,5 @@
 #!/bin/sh
 
-pathToArduino="/opt/arduino-1.8.19/arduino"
 branch=""
 
 getBranchFromFetch()
@@ -11,15 +10,17 @@ getBranchFromFetch()
 
 compileAndUpload(){
    echo 'Compile and Upload'
-   $pathToArduino --upload staff/sketch.ino
+   arduino-cli compile /home/gian/IdeaProjects/Staff/Staff.ino
+   arduino-cli upload /home/gian/IdeaProjects/Staff/Staff.ino
 }
 
 while true
 do
+   #date
    gitFetch=$(git fetch 2>&1)
-   date
    if [ -z "$gitFetch" ]; then
-      echo "Nothing new"
+#      echo "Nothing new"
+       :
    else
       echo "Fetched:\n $gitFetch"
       getBranchFromFetch "$gitFetch"
