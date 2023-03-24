@@ -9,22 +9,28 @@ getBranchFromFetch()
 }
 
 compileAndUpload(){
-   echo 'Compile and Upload'
+   echo '\033[0;36mCompile and Upload\033[0m'
    arduino-cli compile /home/gian/IdeaProjects/Staff/Staff.ino
    arduino-cli upload /home/gian/IdeaProjects/Staff/Staff.ino
 }
 
 while true
 do
-   date
+   #date
    gitFetch=$(git fetch 2>&1)
    if [ -z "$gitFetch" ]; then
-      echo "Nothing new"
+      echo "`date +%H:%M:%S`  Nothing yet."
        :
    else
-      echo "Fetched:\n $gitFetch"
+      echo "\033[0;31m♥ Mmhhh I feel something ♥ I lalalalike it ;) ♥ \033[0m\n\
+	      \033[0;36mGit Fetch:\033[0m\n\
+	      $gitFetch"
       getBranchFromFetch "$gitFetch"
-      git checkout "$branch" && git pull && compileAndUpload
+      echo "\033[0;36mGit Checkout\033[0m"
+      git checkout "$branch"
+      echo "\033[0;36mGit Pull\033[0m"
+      git pull
+      compileAndUpload
    fi
    
    gitFetch=""
