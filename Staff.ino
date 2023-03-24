@@ -15,5 +15,18 @@ void setup() {
 }
 
 void loop() {
-  
+  policeLights();
+}
+
+void policeLights()
+{
+  for(byte i = 0; i < NUM_LEDS / 2; i++)
+  {
+    leds[i] = CRGB::Blue;
+  }
+  for(byte i = NUM_LEDS / 2; i < NUM_LEDS; i++)
+  {
+    leds[i] = CRGB::Red;
+  }
+  FastLED.show();
 }
