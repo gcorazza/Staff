@@ -27,7 +27,7 @@ void policeLights() {
     clearLEDsInvisible(leds);
     delay(DEL);
   }
-  delay(DEL);
+  delay(DEL); 
   for (byte i = 1; i <= 3; i++) {
     setPolice(CRGB::Red, CRGB::Blue);
     delay(DEL);
