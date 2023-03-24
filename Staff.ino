@@ -4,7 +4,7 @@
 
 #define DATA_PIN 6
 
-int DEL = 0;
+int DEL = 80;
 
 CRGB leds[NUM_LEDS];
 
