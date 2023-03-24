@@ -22,7 +22,7 @@ void loop() {
         arr[i] = (rand() % 10);
 
   bubbleSort(arr, NUM_LEDS);
-}
+} 
 
 void swap(int* xp, int* yp)
 {
