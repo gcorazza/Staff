@@ -20,7 +20,16 @@ void loop() {
 
 void policeLights()
 {
-  for(byte i = 0; i < NUM_LEDS / 2; i++)
+  setPolice();
+  delay(100;)
+  clearLEDsInvisible(leds);
+  delay(100);
+  FastLED.show();
+}
+
+void setPolice()
+{
+for(byte i = 0; i < NUM_LEDS / 2; i++)
   {
     leds[i] = CRGB::Blue;
   }
@@ -28,5 +37,4 @@ void policeLights()
   {
     leds[i] = CRGB::Red;
   }
-  FastLED.show();
 }
