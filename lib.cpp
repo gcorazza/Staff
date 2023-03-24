@@ -7,6 +7,8 @@ void clearLEDsInvisible(CRGB leds[]) {
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CRGB::Black;
   }
+
+  FastLED.show();
 }
 
 float interpolate(float tl, float tr, float bl, float br, float xP, float yP) {
