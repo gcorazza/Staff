@@ -171,8 +171,8 @@ void fabian() {
     
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CRGB(brightness, brightness, brightness);
+    delay(80);
     brightness = (brightness + 1) % 255;
   }
-    delay(80);
     FastLED.show();
 }
