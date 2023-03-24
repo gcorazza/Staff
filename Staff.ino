@@ -174,7 +174,7 @@ void fabian() {
 //    clearLEDsInvisible(leds);
     
   for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB(0, 255, 100);
+    leds[i] = CRGB(0, 255, 150);
     brightness = (brightness + 1) % 255;
   }
   
