@@ -21,7 +21,7 @@ void loop() {
 void policeLights()
 {
   setPolice();
-  delay(100;)
+  delay(100);
   clearLEDsInvisible(leds);
   delay(100);
   FastLED.show();
