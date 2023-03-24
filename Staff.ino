@@ -92,7 +92,7 @@ void fast() {
   while (now - start < durationMs) {
     double framePercent = ((double)(now - start)) / durationMs;
     clearLEDsInvisible(leds);
-    lightningFrame(leds, 120, 0, widthFront, widthBack, CRGB::White, ((sin(pow(e, (framePercent * 3.3 + 0.5)))) / (2.5)) + 0.5);
+    lightningFrame(leds, 120, 0, widthFront, widthBack, CRGB::Pink, ((sin(pow(e, (framePercent * 3.3 + 0.5)))) / (2.5)) + 0.5);
     FastLED.show();
     now = millis();
   }
