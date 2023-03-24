@@ -1,6 +1,8 @@
 #include "FastLED.h"
 #include "globals.h"
 #include "lib.h"
+#include <bits/stdc++.h>
+using namespace std;
 
 #define DATA_PIN 6
 
@@ -17,11 +19,47 @@ void setup() {
 void loop() {
 //  slowLeftRight();
 //  lightningStrike();
-   setBulk(leds, 100, 120, CRGB(150,150,150));
+ //  setBulk(leds, 100, 120, CRGB(150,150,150));
+ //splash();
+  bubbleSort();
   // overlapping();
   // fast();
   // fireWater();
   // FastLED.show();
+}
+
+void bubbleSort(int arr[], int n)
+{
+    int i, j;
+    ether();
+    for (i = 0; i < NUM_LEDS - 1; i++)
+        for (j = 0; j < NUM_LEDS - i - 1; j++)
+            if (leds[j] > leds[j + 1]){
+                swap(leds[j], leds[j + 1]);
+                delay(150);
+            }
+}
+
+void splash() {
+int count = 0;
+int a = 0;
+int b = 0;
+int c = 0;
+  for (int i = 0; i < NUM_LEDS; i++) {
+  count++;
+  a = 0;
+  b = 0;
+  c = 0;
+  if(count == 1)
+    a = 1;
+  else if(count == 2)
+    b = 1;
+  else 
+    c = 1;
+    leds[i] = CRGB(255 * a, 255 * b, 255 * c);
+  }
+  FastLED.show();
+  delay(100);
 }
 
 float sin01(float x) {
