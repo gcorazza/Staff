@@ -17,7 +17,7 @@ void setup() {
 void loop() {
 //  slowLeftRight();
 //  lightningStrike();
-   setBulk(leds, 100, 120, CRGB(300,150,150));
+   setBulk(leds, 100, 120, CRGB(300,300,300));
   // overlapping();
   // fast();
   // fireWater();
