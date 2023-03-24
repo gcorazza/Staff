@@ -21,14 +21,14 @@ void loop() {
 }
 
 void policeLights() {
-  for (byte i = 1; i <= 2; i++) {
+  for (byte i = 1; i <= 3; i++) {
     setPolice(CRGB::Blue, CRGB::Red);
     delay(DEL);
     clearLEDsInvisible(leds);
     delay(DEL);
   }
   delay(DEL);
-  for (byte i = 1; i <= 2; i++) {
+  for (byte i = 1; i <= 3; i++) {
     setPolice(CRGB::Red, CRGB::Blue);
     delay(DEL);
     clearLEDsInvisible(leds);
