@@ -6,6 +6,10 @@
 
 CRGB leds[NUM_LEDS];
 
+
+
+int brightness = 0;
+
 void setup() {
 
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
@@ -166,13 +170,11 @@ void ether() {
 
 void fabian() {
     clearLEDsInvisible(leds);
-
-    int brightness = 0;
     
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CRGB(brightness, 0, brightness);
-    delay(1000);
     brightness = (brightness + 1) % 255;
   }
+    
     FastLED.show();
 }
