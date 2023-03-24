@@ -17,11 +17,12 @@ void setup() {
 void loop() {
 //  slowLeftRight();
 //  lightningStrike();
-   setBulk(leds, 100, 120, CRGB(150,150,150));
+//   setBulk(leds, 100, 120, CRGB(150,150,150));
   // overlapping();
   // fast();
-  // fireWater();
+//   fireWater();
   // FastLED.show();
+  fabian();
 }
 
 float sin01(float x) {
@@ -153,4 +154,24 @@ void ether() {
   }
   FastLED.show();
   delay(100);
+}
+
+
+
+
+
+
+
+
+
+void fabian() {
+    clearLEDsInvisible(leds);
+
+    int brightness = 0;
+    
+  for (int i = 0; i < NUM_LEDS; i++) {
+    leds[i] = CRGB(brightness, brightness, brightness);
+    FastLED.show();
+    brightness = (brightness + 1) % 255;
+  }
 }
