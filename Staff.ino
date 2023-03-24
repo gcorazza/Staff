@@ -16,6 +16,8 @@ void setup() {
   Serial.begin(9600);
   randomSeed(28);
   delay(1000);
+  
+  clearLEDsInvisible(leds);
 }
 
 void loop() {
@@ -169,12 +171,13 @@ void ether() {
 
 
 void fabian() {
-    clearLEDsInvisible(leds);
+//    clearLEDsInvisible(leds);
     
   for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CRGB(0, 0, 0);
+    leds[i] = CRGB(0, 255, 0);
     brightness = (brightness + 1) % 255;
   }
-    
-    FastLED.show();
+  
+  FastLED.show();
+  delay(80);
 }
