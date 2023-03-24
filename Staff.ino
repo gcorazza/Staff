@@ -173,5 +173,6 @@ void fabian() {
     leds[i] = CRGB(brightness, brightness, brightness);
     brightness = (brightness + 1) % 255;
   }
+    delay(80);
     FastLED.show();
 }
