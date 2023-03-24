@@ -3,7 +3,7 @@
 #include "lib.h"
 
 #define DATA_PIN 6
-#define DEL 200;
+#define DEL 200
 
 CRGB leds[NUM_LEDS];
 
