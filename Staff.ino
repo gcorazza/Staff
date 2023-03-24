@@ -3,6 +3,7 @@
 #include "lib.h"
 
 #define DATA_PIN 6
+#define DEL 200;
 
 CRGB leds[NUM_LEDS];
 
@@ -11,7 +12,7 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   Serial.begin(9600);
   randomSeed(28);
-  delay(1000);
+  delay(100);
 }
 
 void loop() {
@@ -19,20 +20,20 @@ void loop() {
 }
 
 void policeLights() {
-  for (byte i = 1; i <= 3; i++) {
+  for (byte i = 1; i <= 2; i++) {
     setPolice(CRGB::Blue, CRGB::Red);
-    delay(100);
+    delay(DEL);
     clearLEDsInvisible(leds);
-    delay(100);
+    delay(DEL);
   }
-  delay(100);
-  for (byte i = 1; i <= 3; i++) {
+  delay(DEL);
+  for (byte i = 1; i <= 2; i++) {
     setPolice(CRGB::Red, CRGB::Blue);
-    delay(100);
+    delay(DEL);
     clearLEDsInvisible(leds);
-    delay(100);
+    delay(DEL);
   }
-  delay(100);
+  delay(DEL);
 }
 
 void setPolice(CRGB c1, CRGB c2) {
