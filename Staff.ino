@@ -18,23 +18,29 @@ void loop() {
   policeLights();
 }
 
-void policeLights()
-{
-  setPolice();
+void policeLights() {
+  for (byte i = 1; i <= 3; i++) {
+    setPolice(CRGB::Blue, CRGB::Red);
+    delay(100);
+    clearLEDsInvisible(leds);
+    delay(100);
+  }
   delay(100);
-  clearLEDsInvisible(leds);
+  for (byte i = 1; i <= 3; i++) {
+    setPolice(CRGB::Red, CRGB::Blue);
+    delay(100);
+    clearLEDsInvisible(leds);
+    delay(100);
+  }
   delay(100);
 }
 
-void setPolice()
-{
-for(byte i = 0; i < NUM_LEDS / 2; i++)
-  {
-    leds[i] = CRGB::Blue;
+void setPolice(CRGB c1, CRGB c2) {
+  for (byte i = 0; i < NUM_LEDS / 2; i++) {
+    leds[i] = c1;
   }
-  for(byte i = NUM_LEDS / 2; i < NUM_LEDS; i++)
-  {
-    leds[i] = CRGB::Red;
+  for (byte i = NUM_LEDS / 2; i < NUM_LEDS; i++) {
+    leds[i] = c2;
   }
   FastLED.show();
 }
