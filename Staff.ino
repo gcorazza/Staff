@@ -33,6 +33,13 @@ void loop() {
      setBulk(leds, 10, 20, CRGB(255,255,0));
   FastLED.show();
     delay(1000);
+  ///slowLeftRight();
+  //lightningStrike();
+   //setBulk(leds, 100, 120, CRGB(150,150,150));
+   //overlapping();
+  //fast();
+  //fireWater();
+  //FastLED.show();
 }
 
 float sin01(float x) {
