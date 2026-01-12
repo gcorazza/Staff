@@ -1,0 +1,2 @@
+void setupGy();
+void loopGy();

@@ -1,6 +1,8 @@
 #include "FastLED.h"
 #include "globals.h"
 #include "lib.h"
+#include <Arduino.h>
+#include "GY521.h"
 
 #define DATA_PIN 6
 
@@ -12,16 +14,25 @@ void setup() {
   Serial.begin(9600);
   randomSeed(28);
   delay(1000);
+  setupGy();
 }
 
 void loop() {
+  loopGy();
 //  slowLeftRight();
 //  lightningStrike();
-   setBulk(leds, 100, 120, CRGB(150,150,150));
+   // setBulk(leds, 0, 120, CRGB(255,255,255));
   // overlapping();
   // fast();
   // fireWater();
-  // FastLED.show();
+     //setBulk(leds, 0, 120, CRGB(255,255,255));
+
+     setBulk(leds, 0, 120, CRGB(0,0,0));
+  FastLED.show();
+    delay(1000);
+     setBulk(leds, 10, 20, CRGB(255,255,0));
+  FastLED.show();
+    delay(1000);
 }
 
 float sin01(float x) {
