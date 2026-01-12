@@ -11,7 +11,7 @@ CRGB leds[NUM_LEDS];
 void setup() {
 
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-  Serial.begin(9600);
+  Serial.begin(115200);
   randomSeed(28);
   delay(1000);
   setupGy();
@@ -29,10 +29,10 @@ void loop() {
 
      setBulk(leds, 0, 120, CRGB(0,0,0));
   FastLED.show();
-    delay(1000);
-     setBulk(leds, 10, 20, CRGB(255,255,0));
+  delay(50);
+  setBulk(leds, 20, 21, CRGB(255,255,0));
   FastLED.show();
-    delay(1000);
+  delay(50);
   ///slowLeftRight();
   //lightningStrike();
    //setBulk(leds, 100, 120, CRGB(150,150,150));
