@@ -29,7 +29,7 @@ void fifoEnable() {
   Wire.write(0b01000000);  // FIFO_EN
   Wire.endTransmission();
 
-    Wire.beginTransmission(MPU_ADDR);
+  Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x23);        // FIFO_EN register
   Wire.write(0b01111000);  // Accel + Gyro XYZ
   Wire.endTransmission();

@@ -26,14 +26,11 @@ void loop() {
   // fast();
   // fireWater();
      //setBulk(leds, 0, 120, CRGB(255,255,255));
-
-     setBulk(leds, 0, 120, CRGB(0,0,0));
+  //FastLED.show();
+  //delay(50);
+  //setBulk(leds, 20, 21, CRGB(255,255,0));
   FastLED.show();
-  delay(50);
-  setBulk(leds, 20, 21, CRGB(255,255,0));
-  FastLED.show();
-  delay(50);
-  ///slowLeftRight();
+  slowLeftRight();
   //lightningStrike();
    //setBulk(leds, 100, 120, CRGB(150,150,150));
    //overlapping();
