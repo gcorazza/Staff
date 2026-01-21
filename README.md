@@ -12,3 +12,10 @@ I programmed two web based tool to bake curves to an array:
   Interpolates points with spline functions
 - #### svgToEvenList.html
   converts a svg curve, see bootyfull.svg as an example (convenient to edit in gimp)
+
+
+Todo:
+
+- Implement shell sort on Staff
+- Raw Video Data on sd card and play it back
+- More Gyroscope and Accelerometer Animations
