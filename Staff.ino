@@ -4,7 +4,9 @@
 #include <Arduino.h>
 #include "GY521.h"
 
-#define DATA_PIN 6
+#define DATA_PIN 23
+
+int i=0;
 
 CRGB leds[NUM_LEDS];
 
@@ -18,19 +20,27 @@ void setup() {
 }
 
 void loop() {
+  i++;
   loopGy();
 //  slowLeftRight();
 //  lightningStrike();
-   // setBulk(leds, 0, 120, CRGB(255,255,255));
-  // overlapping();
-  // fast();
-  // fireWater();
+  if(i == 119){
+    i =0;
+  }
+  //setBulk(leds, 0, 120, CRGB(0,0,0));
+
+  //setBulk(leds, 0, 120, CRGB(255,255,255));
+  //setBulk(leds, i, i+1, CRGB(255,255,255));
+
+  //overlapping();
+  //fast();
+   fireWater();
      //setBulk(leds, 0, 120, CRGB(255,255,255));
   //FastLED.show();
   //delay(50);
   //setBulk(leds, 20, 21, CRGB(255,255,0));
   FastLED.show();
-  slowLeftRight();
+  //slowLeftRight();
   //lightningStrike();
    //setBulk(leds, 100, 120, CRGB(150,150,150));
    //overlapping();

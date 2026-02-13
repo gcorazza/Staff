@@ -5,6 +5,9 @@
 
 const int MPU_ADDR = 0x68; // I2C address of the MPU-6050. If AD0 pin is set to HIGH, the I2C address will be 0x69.
 
+#define SDA_PIN 22
+#define SDL_PIN 21
+
 int16_t accelerometer_x, accelerometer_y, accelerometer_z; // variables for accelerometer raw data
 int16_t gyro_x, gyro_y, gyro_z; // variables for gyro raw data
 int16_t temperature; // variables for temperature data
@@ -44,9 +47,10 @@ uint16_t fifoCount() {
   return (Wire.read() << 8) | Wire.read();
 }
 
-
 void setupGy() {
-  Wire.begin();
+  Wire.begin(SDA_PIN, SDL_PIN);
+  Wire.setClock(400000);
+
   Wire.beginTransmission(MPU_ADDR); // Begins a transmission to the I2C slave (GY-521 board)
   Wire.write(0x6B); // PWR_MGMT_1 register
   Wire.write(0); // set to zero (wakes up the MPU-6050)
