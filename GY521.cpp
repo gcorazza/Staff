@@ -110,12 +110,15 @@ void loopGy() {
 
     count -= 12;
 
-    // Beispiel-Ausgabe (optional!)
-    Serial.print("aX:"); Serial.print(accelerometer_x);
-    Serial.print(",aY:"); Serial.print(accelerometer_y);
-    Serial.print(",aZ:"); Serial.print(accelerometer_z);
-    Serial.print(",gX:"); Serial.print(gyro_x);
-    Serial.print(",gY:"); Serial.print(gyro_y);
-    Serial.print(",gZ:"); Serial.println(gyro_z);
+    //printGy();
   }
+}
+
+void printGy(){
+  Serial.print("aX:"); Serial.print(accelerometer_x);
+  Serial.print(",aY:"); Serial.print(accelerometer_y);
+  Serial.print(",aZ:"); Serial.print(accelerometer_z);
+  Serial.print(",gX:"); Serial.print(gyro_x);
+  Serial.print(",gY:"); Serial.print(gyro_y);
+  Serial.print(",gZ:"); Serial.println(gyro_z);
 }

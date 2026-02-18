@@ -19,3 +19,13 @@ Todo:
 - Implement shell sort on Staff
 - Raw Video Data on sd card and play it back
 - More Gyroscope and Accelerometer Animations
+
+
+
+# Send file to ESP32
+
+echo -e "power on\nagent on\ndng\nscan on" | bluetoothctl
+> pair <mac>
+> trust <mac>
+
+./sendFile.sh <file>
