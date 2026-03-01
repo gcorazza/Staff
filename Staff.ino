@@ -1,12 +1,13 @@
 #include <Arduino.h>
 #include "FastLED.h"
 #include <PNGdec.h>
+#include <LittleFS.h>
 #include "src/GY521.h"
 #include "src/globals.h"
 #include "src/lib.h"
-#include "src/bt.h"
+#include "src/wifi.h"
 
-#define DATA_PIN 23
+#define LED_DATA_PIN 23
 
 int i=0;
 
@@ -19,23 +20,22 @@ const unsigned long interval = 10000; // 10 Sekunden
 
 void setup() {
 
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, LED_DATA_PIN>(leds, NUM_LEDS);
   Serial.begin(115200);
   randomSeed(0);
   delay(3000);
   setupGy();
-  setupBt();
+  setupWifi();
   listLittleFS();
   printESP();
   setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
-  printFileHex("/effects/disch.png");
   drawPNGtoLEDs("/effects/disch.png");
 }
 
 void loop() {
   ledAliveAnimation();
   loopGy();
-  loopBt();
+  loopWifi();
 
   unsigned long now = millis();
 
