@@ -14,6 +14,9 @@ CRGB leds[NUM_LEDS];
 
 PNG png;
 
+unsigned long lastPrint = 0;
+const unsigned long interval = 10000; // 10 Sekunden
+
 void setup() {
 
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
@@ -24,10 +27,8 @@ void setup() {
   setupBt();
   listLittleFS();
   printESP();
-
-  //drawPNGtoLEDs("/disch.png", 0);
-  //printFileHex("/disch.png");
-
+  setBulk(leds, 0, 120, CRGB(0,0,0));
+  printFileHex("/effects/disch.png");
 }
 
 void printFileHex(const char* filename) {
@@ -78,9 +79,17 @@ void printESP(){
 }
 
 void loop() {
+  drawPNGtoLEDs("/effects/disch.png");
   loopGy();
   loopBt();
-  ledAliveAnimation();
+
+    unsigned long now = millis();
+
+    if (now - lastPrint >= interval) {
+      lastPrint = now;
+      Serial.print("Zeit seit Start (ms): ");
+      Serial.println(now);
+    }
 }
 
 void ledAliveAnimation(){
@@ -91,7 +100,6 @@ void ledAliveAnimation(){
     setBulk(leds, 0, 120, CRGB(0,0,0));
     setBulk(leds, i, i+1, CRGB(255,255,255));
     FastLED.show();
-
 }
 
 
@@ -100,7 +108,7 @@ void listLittleFS() {
 
   Serial.println("Listing LittleFS files:");
 
-  File root = LittleFS.open("/");
+  File root = LittleFS.open("/effects");
   File file = root.openNextFile();
 
   while (file) {
@@ -121,84 +129,56 @@ File gFile;
 // will use to open files, fetch data and close the file.
 
 File pngfile;
-
-void* myOpen(const char* filename, int32_t* filesize) {
-    Serial.print("myOpen filename: ");
-    Serial.println(filename);
-    gFile = LittleFS.open(filename, "r");
-    if (!gFile){
-      Serial.print("Error open file");
-      return nullptr;
-    }
+void* myOpen(const char* filename, int32_t* filesize)
+{
+    gFile = LittleFS.open(filename, "rb");
+    if (!gFile) return NULL;
     *filesize = gFile.size();
-    Serial.print("File size: ");
-    Serial.println(*filesize);
     return &gFile;
 }
 
-void myClose(void* handle) {
-    // handle = &gFile
+void myClose(void* handle){
     File* f = (File*)handle;
     f->close();
 }
 
-int32_t myRead(PNGFILE* handle, uint8_t* buf, int32_t len)
-{
-    File* f = (File*)handle;
-    return f->read(buf, len);
+int32_t myRead(PNGFILE *pFile, uint8_t *pBuf, int32_t iLen){
+    File *f = (File *)pFile->fHandle;
+    return f->read(pBuf, iLen);
 }
 
-
-int32_t mySeek(PNGFILE* handle, int32_t pos)
+int32_t mySeek(PNGFILE *pFile, int32_t iPosition)
 {
-    File* f = (File*)handle;
-    if (!f->seek(pos)) return -1;
-    return f->position();   // WICHTIG!
+    File *f = (File *)pFile->fHandle;
+    if (!f->seek(iPosition)) return -1;
+    return f->position();
 }
 
 int myDraw(PNGDRAW* draw) {
-    // Leerlauf: Wir speichern die Pixel in Zeilen manuell
+    uint8_t *p = draw->pPixels;
+
+    for (int x = 0; x < draw->iWidth; x++)
+    {
+        uint8_t r = p[x * 3 + 0];
+        uint8_t g = p[x * 3 + 1];
+        uint8_t b = p[x * 3 + 2];
+
+        leds[x] = CRGB(r, g, b);
+    }
+
+    FastLED.show();
     return 1;
 }
 
-// ---------------- Hilfsfunktion RGB565 → CRGB ----------------
-CRGB RGB565toCRGB(uint16_t color) {
-    uint8_t r = ((color >> 11) & 0x1F) << 3;
-    uint8_t g = ((color >> 5) & 0x3F) << 2;
-    uint8_t b = (color & 0x1F) << 3;
-    return CRGB(r, g, b);
-}
-
 // ---------------- Pixel in NeoPixel schreiben ----------------
-bool drawPNGtoLEDs(const char* filename, int row) {
-    if (!LittleFS.begin()) {
-        Serial.println("LittleFS mount failed!");
-        return false;
-    }
-
-    // Erstelle neuen Pfad mit führendem "/"
-    //char filepath[64]; // groß genug für den Pfad
-    //snprintf(filepath, sizeof(filepath), "/%s", filename);
-
-    // Prüfe, ob Datei existiert und Größe stimmt
-    File f = LittleFS.open(filename, "r");
-    if (!f) {
-        Serial.println("File open failed!");
-        return false;
-    }
-    Serial.print("File size: ");
-    Serial.println(f.size());
-    f.close();
-
-
+bool drawPNGtoLEDs(const char* filename)
+{
     int res = png.open(filename, myOpen, myClose, myRead, mySeek, myDraw);
     if (res != PNG_SUCCESS) {
-        Serial.print("PNG open failed! Error code: ");
-        Serial.println(res);
+        Serial.println("PNG open failed!");
         return false;
     }
 
-    png.decode(NULL, 0); // nur Header lesen
     uint16_t width = png.getWidth();
     uint16_t height = png.getHeight();
     if (width != NUM_LEDS) {
@@ -209,27 +189,9 @@ bool drawPNGtoLEDs(const char* filename, int row) {
         png.close();
         return false;
     }
-    if (row >= height) {
-        Serial.println("Requested row > PNG height");
-        png.close();
-        return false;
-    }
 
-    // Zeilenweise decodieren
-    uint16_t* rowBuffer = new uint16_t[width];
-    for (int y = 0; y <= row; y++) {
-        png.decode(rowBuffer, width * sizeof(uint16_t));
-    }
-
-    // Pixel in NeoPixel Buffer schreiben
-    for (int x = 0; x < width; x++) {
-        leds[x] = RGB565toCRGB(rowBuffer[x]);
-    }
-
-    delete[] rowBuffer;
+    png.decode(NULL, 0);  // startet komplettes Rendering
     png.close();
-
-    FastLED.show();  // Daten an LEDs senden
     return true;
 }
 

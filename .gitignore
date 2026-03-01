@@ -3,3 +3,4 @@
 *.stl
 *.gcode
 *.blend1
+/littlefs.bin

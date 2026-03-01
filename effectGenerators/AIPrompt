@@ -1,0 +1,65 @@
+ Ich bin ein Zauberer und du baust mir einen Lichteffekt für meinen Zauberstab.
+
+ Erstelle ein vollständiges, lauffähiges Python-Skript.
+
+ Das Skript soll ein Bild mit exakt 113 Pixeln Breite erzeugen.
+
+ WICHTIG – Interpretation des Bildes:
+ Das Bild ist eine spatiotemporale Map für eine 1D LED-Leiste.
+
+ - 113 Pixel BREITE = räumliche Position der LEDs (links nach rechts = LED 0 bis LED 112)
+ - X Pixel HÖHE = Zeitachse (oben nach unten = Frame 0 bis Frame X-1)
+ - Jede Zeile repräsentiert einen Zeitpunkt.
+ - Jede Spalte repräsentiert eine LED-Position.
+ - Das Bild beschreibt also eine Animation über X Frames für 113 LEDs.
+ - Die Animation soll 2 Sekunden lang sein
+ - Eine Sekunde sind 500 Pixel
+
+ Gestaltungsanforderungen:
+ - Klare, kräftige Farben (für LED geeignet)
+ - Schwarzer Hintergrund (RGB, kein Alpha)
+ - Hoher Kontrast
+ - Keine Transparenz
+ - Keine externen Bilddateien verwenden
+ - Nur Standardbibliothek oder Pillow (PIL) verwenden
+ - Das Bild als "output.png" speichern
+ - Exakt 113x1000 Pixel
+ - Der Code soll keine Kommentare enthalten
+
+ WICHTIG, weil der Text direkt in einen Compiler gepiped wird:
+ Gib ausschließlich den vollständigen Python-Code zurück.
+ Kein Text außerhalb des Codes.
+ Ich bin ein Zauberer und du baust mir einen Lichteffekt für meinen Zauberstab.
+
+ Erstelle ein vollständiges, lauffähiges Python-Skript.
+
+ Das Skript soll ein Bild mit exakt 113 Pixeln Breite erzeugen.
+
+ WICHTIG – Interpretation des Bildes:
+ Das Bild ist eine spatiotemporale Map für eine 1D LED-Leiste.
+
+ - 113 Pixel BREITE = räumliche Position der LEDs (links nach rechts = LED 0 bis LED 112)
+ - X Pixel HÖHE = Zeitachse (oben nach unten = Frame 0 bis Frame X-1)
+ - Jede Zeile repräsentiert einen Zeitpunkt.
+ - Jede Spalte repräsentiert eine LED-Position.
+ - Das Bild beschreibt also eine Animation über X Frames für 113 LEDs.
+ - Die Animation soll 2 Sekunden lang sein
+ - Eine Sekunde sind 500 Pixel
+
+ Gestaltungsanforderungen:
+ - Klare, kräftige Farben (für LED geeignet)
+ - Schwarzer Hintergrund (RGB, kein Alpha)
+ - Hoher Kontrast
+ - Keine Transparenz
+ - Keine externen Bilddateien verwenden
+ - Nur Standardbibliothek oder Pillow (PIL) verwenden
+ - Das Bild als "output.png" speichern
+ - Exakt 113x1000 Pixel
+ - Der Code soll keine Kommentare enthalten
+ - Der Effekt soll passend zum Zauberstab und interessant anzuschauen sein
+
+ WICHTIG, weil der Text direkt in einen Compiler gepiped wird:
+ Gib ausschließlich den vollständigen Python-Code zurück.
+ Kein Text außerhalb des Codes.
+
+Der Zauberspruch heißt:

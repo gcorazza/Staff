@@ -29,3 +29,20 @@ echo -e "power on\nagent on\ndng\nscan on" | bluetoothctl
 > trust <mac>
 
 ./sendFile.sh <file>
+
+
+# flash data directory:
+```zsh
+mklittlefs -c data -b 4096 -p 256 -s 0x1E0000 littlefs.bin &&
+esptool --port /dev/ttyUSB0 write-flash 0x210000 littlefs.bin
+```
+
+# reset flash
+```zsh
+esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash
+```
+
+# restart
+```zsh
+esptool --no-stub flash_id
+```
