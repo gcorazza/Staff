@@ -1,6 +1,6 @@
-/.idea/
+.idea
 *.3mf
 *.stl
 *.gcode
 *.blend1
-/littlefs.bin
+littlefs.bin

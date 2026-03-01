@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include "FastLED.h"
-#include "globals.h"
-#include "lib.h"
-#include "GY521.h"
-#include "bt.h"
 #include <PNGdec.h>
+#include "src/GY521.h"
+#include "src/globals.h"
+#include "src/lib.h"
+#include "src/bt.h"
 
 #define DATA_PIN 23
 
@@ -27,9 +27,25 @@ void setup() {
   setupBt();
   listLittleFS();
   printESP();
-  setBulk(leds, 0, 120, CRGB(0,0,0));
+  setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
   printFileHex("/effects/disch.png");
+  drawPNGtoLEDs("/effects/disch.png");
 }
+
+void loop() {
+  ledAliveAnimation();
+  loopGy();
+  loopBt();
+
+  unsigned long now = millis();
+
+  if (now - lastPrint >= interval) {
+    lastPrint = now;
+    Serial.print("Zeit seit Start (ms): ");
+    Serial.println(now);
+  }
+}
+
 
 void printFileHex(const char* filename) {
     if (!LittleFS.begin()) {
@@ -76,20 +92,6 @@ void printESP(){
   Serial.println(ESP.getChipModel());
   Serial.println(ESP.getChipRevision());
   Serial.println(ESP.getSdkVersion());
-}
-
-void loop() {
-  drawPNGtoLEDs("/effects/disch.png");
-  loopGy();
-  loopBt();
-
-    unsigned long now = millis();
-
-    if (now - lastPrint >= interval) {
-      lastPrint = now;
-      Serial.print("Zeit seit Start (ms): ");
-      Serial.println(now);
-    }
 }
 
 void ledAliveAnimation(){
