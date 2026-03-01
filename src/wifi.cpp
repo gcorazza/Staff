@@ -34,12 +34,12 @@ void loopWifi() {
     Serial.print("Wifi status changed: ");
     Serial.println(statusNow);
     if (statusNow == WL_CONNECTED) {
-      Serial.print("Connected! IP: ");
+      Serial.print("Wifi Connected! IP: ");
       Serial.println(WiFi.localIP());
       tcpServer.begin();
     }
-    if (statusNow == WL_CONNECTED) {
-      Serial.println("Disconnected!\n");
+    if (statusNow == WL_DISCONNECTED) {
+      Serial.println("Wifi Disconnected!\n");
     }
 
     status = statusNow;

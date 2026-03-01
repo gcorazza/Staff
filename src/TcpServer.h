@@ -12,6 +12,15 @@ public:
 private:
     WiFiServer server;
     WiFiClient client;
+    String inputBuffer;
+
+    // File reception
+    uint8_t* fileBuffer;
+    size_t fileSize;
+    size_t bytesReceived;
+    bool receivingFile;
+
+    void processCommand(const String& cmd);
 };
 
 #endif
