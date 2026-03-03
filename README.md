@@ -24,11 +24,7 @@ This project implements the logic for the LED and Sensors.
 
 # Send file to ESP32
 
-echo -e "power on\nagent on\ndng\nscan on" | bluetoothctl
-> pair <mac>
-> trust <mac>
-
-./sendFile.sh <file>
+./sendPngAndPlay.sh <file>
 
 
 # flash data directory:
