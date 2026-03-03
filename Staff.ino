@@ -7,7 +7,9 @@
 #include "src/lib.h"
 #include "src/wifi.h"
 #include "src/LEDs.h"
+#include "src/StickGesture.h"
 
+StickGesture stickGesture;
 
 int i=0;
 
@@ -30,8 +32,13 @@ void setup() {
 
 void loop() {
   ledAliveAnimation();
-  loopGy();
   loopWifi();
+  loopGy();
+  StickGesture::Gesture ges = stickGesture.loopGesture();
+
+  if(ges == StickGesture::Gesture::HitGround){
+	  drawPNGtoLEDs("/effects/disch.png");
+  }
 
   unsigned long now = millis();
 
@@ -117,4 +124,3 @@ void listLittleFS() {
     file = root.openNextFile();
   }
 }
-

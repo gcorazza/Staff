@@ -19,6 +19,8 @@ char* convert_int16_to_str(int16_t i) { // converts int16 to string. Moreover, r
   return tmp_str;
 }
 
+static void printGy();
+
 void fifoReset() {
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x6A);        // USER_CTRL
@@ -101,16 +103,16 @@ void loopGy() {
     Wire.endTransmission(false);
     Wire.requestFrom(MPU_ADDR, 12, true);
 
-    accelerometer_x = Wire.read()<<8 | Wire.read();
-    accelerometer_y = Wire.read()<<8 | Wire.read();
-    accelerometer_z = Wire.read()<<8 | Wire.read();
-    gyro_x = Wire.read()<<8 | Wire.read();
-    gyro_y = Wire.read()<<8 | Wire.read();
-    gyro_z = Wire.read()<<8 | Wire.read();
+    accelerometer_x = (Wire.read()<<8 | Wire.read());
+    accelerometer_y = (Wire.read()<<8 | Wire.read());
+    accelerometer_z = (Wire.read()<<8 | Wire.read());
+    gyro_x = (Wire.read()<<8 | Wire.read()) / 131.0f;
+    gyro_y = (Wire.read()<<8 | Wire.read()) / 131.0f;
+    gyro_z = (Wire.read()<<8 | Wire.read()) / 131.0f;
 
     count -= 12;
 
-    //printGy();
+    printGy();
   }
 }
 
