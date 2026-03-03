@@ -1,5 +1,8 @@
 #include <WiFi.h>
 #include "TcpServer.h"
+#include <ESPmDNS.h>
+
+#define NETWORKNAME "Staff"
 
 const char* ssid = "Gadderbaum";
 const char* password = "isfibeTNG";
@@ -25,6 +28,10 @@ void setupWifi() {
   Serial.print("Wifi Startstate: ");
   Serial.println(status);
   WiFi.begin(ssid, password);
+
+  if (MDNS.begin(NETWORKNAME)) {
+    Serial.println("mDNS gestartet");
+  }
 }
 
 void loopWifi() {
