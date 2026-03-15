@@ -38,7 +38,5 @@ python spell.py &&
 # Bild in content Ordner kopieren
 cp output.png ../data/effects/disch.png &&
 
-# Auf Staff schreiben über USB
-cd .. &&
-mklittlefs -c data -b 4096 -p 256 -s 0x1E0000 littlefs.bin &&
-esptool --port /dev/ttyUSB0 write-flash 0x210000 littlefs.bin
+# Send PNG to ESP32
+sendPngAndPlay.sh Staff 888 output.png
