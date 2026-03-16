@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HF_TOKEN="***REMOVED***"
+HF_TOKEN="***"
 
 # Die Anfrage aus AIPrompt + Parameter
 PROMPT_FILE="AIPrompt"
@@ -35,8 +35,6 @@ MODIFIED=$(echo "$CONTENT" | grep -v '```')
 echo "$MODIFIED" > spell.py &&
 # Skript ausführen
 python spell.py &&
-# Bild in content Ordner kopieren
-cp output.png ../data/effects/disch.png &&
 
 # Send PNG to ESP32
 sendPngAndPlay.sh Staff 888 output.png

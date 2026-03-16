@@ -1,65 +1,35 @@
- Ich bin ein Zauberer und du baust mir einen Lichteffekt für meinen Zauberstab.
+I am a wizard and you are creating a light effect for my magic wand.
 
- Erstelle ein vollständiges, lauffähiges Python-Skript.
+Create a complete, executable Python script.
 
- Das Skript soll ein Bild mit exakt 113 Pixeln Breite erzeugen.
+The script should generate an image with exactly 113 pixels in width.
 
- WICHTIG – Interpretation des Bildes:
- Das Bild ist eine spatiotemporale Map für eine 1D LED-Leiste.
+IMPORTANT – Interpretation of the image:
+The image is a spatiotemporal map for a 1D LED strip.
 
- - 113 Pixel BREITE = räumliche Position der LEDs (links nach rechts = LED 0 bis LED 112)
- - X Pixel HÖHE = Zeitachse (oben nach unten = Frame 0 bis Frame X-1)
- - Jede Zeile repräsentiert einen Zeitpunkt.
- - Jede Spalte repräsentiert eine LED-Position.
- - Das Bild beschreibt also eine Animation über X Frames für 113 LEDs.
- - Die Animation soll 2 Sekunden lang sein
- - Eine Sekunde sind 500 Pixel
+* 113 pixels WIDTH = spatial position of the LEDs (left to right = LED 0 to LED 112)
+* X pixels HEIGHT = time axis (top to bottom = frame 0 to frame X-1)
+* Each row represents a moment in time.
+* Each column represents an LED position.
+* The image thus describes an animation over X frames for 113 LEDs.
+* The animation should be 2 seconds long
+* One second equals 500 pixels
 
- Gestaltungsanforderungen:
- - Klare, kräftige Farben (für LED geeignet)
- - Schwarzer Hintergrund (RGB, kein Alpha)
- - Hoher Kontrast
- - Keine Transparenz
- - Keine externen Bilddateien verwenden
- - Nur Standardbibliothek oder Pillow (PIL) verwenden
- - Das Bild als "output.png" speichern
- - Exakt 113x1000 Pixel
- - Der Code soll keine Kommentare enthalten
+Design requirements:
 
- WICHTIG, weil der Text direkt in einen Compiler gepiped wird:
- Gib ausschließlich den vollständigen Python-Code zurück.
- Kein Text außerhalb des Codes.
- Ich bin ein Zauberer und du baust mir einen Lichteffekt für meinen Zauberstab.
+* Clear, bright colors (suitable for LEDs)
+* Black background (RGB, no alpha)
+* High contrast
+* No transparency
+* Do not use external image files
+* Use only the standard library or Pillow (PIL)
+* Save the image as "output.png"
+* Exactly 113x1000 pixels
+* The code must contain no comments
+* The effect should be fitting for a magic wand and visually interesting
 
- Erstelle ein vollständiges, lauffähiges Python-Skript.
+IMPORTANT, because the text is piped directly into a compiler:
+Return **only the complete Python code**.
+No text outside the code.
 
- Das Skript soll ein Bild mit exakt 113 Pixeln Breite erzeugen.
-
- WICHTIG – Interpretation des Bildes:
- Das Bild ist eine spatiotemporale Map für eine 1D LED-Leiste.
-
- - 113 Pixel BREITE = räumliche Position der LEDs (links nach rechts = LED 0 bis LED 112)
- - X Pixel HÖHE = Zeitachse (oben nach unten = Frame 0 bis Frame X-1)
- - Jede Zeile repräsentiert einen Zeitpunkt.
- - Jede Spalte repräsentiert eine LED-Position.
- - Das Bild beschreibt also eine Animation über X Frames für 113 LEDs.
- - Die Animation soll 2 Sekunden lang sein
- - Eine Sekunde sind 500 Pixel
-
- Gestaltungsanforderungen:
- - Klare, kräftige Farben (für LED geeignet)
- - Schwarzer Hintergrund (RGB, kein Alpha)
- - Hoher Kontrast
- - Keine Transparenz
- - Keine externen Bilddateien verwenden
- - Nur Standardbibliothek oder Pillow (PIL) verwenden
- - Das Bild als "output.png" speichern
- - Exakt 113x1000 Pixel
- - Der Code soll keine Kommentare enthalten
- - Der Effekt soll passend zum Zauberstab und interessant anzuschauen sein
-
- WICHTIG, weil der Text direkt in einen Compiler gepiped wird:
- Gib ausschließlich den vollständigen Python-Code zurück.
- Kein Text außerhalb des Codes.
-
-Der Zauberspruch heißt:
+The spell name is:
