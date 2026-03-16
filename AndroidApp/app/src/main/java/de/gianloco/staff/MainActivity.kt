@@ -63,9 +63,6 @@ class MainActivity : ComponentActivity() {
 
 }
 
-suspend fun cast(spell: String){
-    requestPythonFromAI(spell, "")
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -73,13 +70,4 @@ fun GreetingPreview() {
     StaffTheme {
         Text("Staff App")
     }
-}
-
-fun imageFromCode(code: String): Bitmap? {
-    val py = Python.getInstance()
-    val bytes = py.builtins
-        .callAttr("exec", code)
-        .toJava(ByteArray::class.java)
-
-    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }

@@ -21,7 +21,7 @@ Design requirements:
 * Black background (RGB, no alpha)
 * High contrast
 * No transparency
-* Do not use external image files
+* Do not use external image filessendPngAndPlay
 * Use only the standard library or Pillow (PIL)
 * Save the image as "output.png"
 * Exactly 113x1000 pixels
