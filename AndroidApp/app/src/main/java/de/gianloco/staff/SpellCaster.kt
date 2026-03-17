@@ -5,8 +5,6 @@ import android.graphics.BitmapFactory
 import com.chaquo.python.Python
 
 class SpellCaster(private val espClient: EspTcpClient) {
-
-
     val spellPrompt= """
     I am a wizard and you are creating a light effect for my magic wand.
 
@@ -45,16 +43,21 @@ class SpellCaster(private val espClient: EspTcpClient) {
     The spell name is:
     """.trimIndent()
 
-    suspend fun cast(spell: String){
+    suspend fun cast(spell: String): Bitmap? {
         val phytonCode = promptAi(spellPrompt + spell)
         val image = imageFromCode(phytonCode)
-        espClient.sendImage(image)
+        espClient.sendSpell(image, spell)
+        return image
     }
 
     fun imageFromCode(code: String): Bitmap? {
         val py = Python.getInstance()
-        val bytes = py.builtins
-            .callAttr("exec", code)
+        val globals = py.builtins.callAttr("dict")
+        py.builtins.callAttr("exec", code, globals)
+
+        val bytes = py.getModule("io")
+            .callAttr("open", "output.png", "rb")
+            .callAttr("read")
             .toJava(ByteArray::class.java)
 
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)

@@ -1,17 +1,19 @@
 package de.gianloco.staff
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.PrintWriter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.net.Socket
 
-class EspTcpClient(private val context: Context) {
+class EspTcpClient(context: Context) {
 
     private val serviceType = "_http._tcp."
     private val targetName = "NETWORKNAME"
+    private var espIp: String? = null
 
     private val nsdManager =
         context.getSystemService(Context.NSD_SERVICE) as NsdManager
@@ -50,31 +52,32 @@ class EspTcpClient(private val context: Context) {
         override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {}
 
         override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
-
-            val host = serviceInfo.host.hostAddress
-            connect(host)
+            espIp = serviceInfo.host.hostAddress
         }
     }
 
-    private fun connect(ip: String) {
+    suspend fun sendSpell(bitmap: Bitmap?, spell: String) = withContext(Dispatchers.IO) {
+        if (bitmap == null || espIp == null) return@withContext
 
-        Thread {
+        try {
+            val socket = Socket(espIp, 888)
+            val outputStream = socket.getOutputStream()
 
-            val socket = Socket(ip, 888)
+            val bos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos)
+            val bytes = bos.toByteArray()
 
-            val writer = PrintWriter(socket.getOutputStream(), true)
-            val reader = BufferedReader(
-                InputStreamReader(socket.getInputStream())
-            )
+            val filename = "$spell.png"
+            val filesize = bytes.size
 
-            writer.println("hello esp32")
-
-            val response = reader.readLine()
-
-            println("ESP32: $response")
+            val header = "PLAYSENDPNG $filename $filesize\n"
+            outputStream.write(header.toByteArray())
+            outputStream.write(bytes)
+            outputStream.flush()
 
             socket.close()
-
-        }.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
