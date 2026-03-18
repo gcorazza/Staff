@@ -4,11 +4,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
+import android.util.Log
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -20,8 +22,11 @@ enum class ConnectionStatus {
 
 class EspTcpClient(context: Context) {
 
-    private val serviceType = "_http._tcp."
+    private val TAG = "EspTcpClient"
+    private val serviceType = "_arcane._tcp."
     private val targetName = "arcanebyte"
+    private val targetHostname = "arcanebyte.local"
+    
     private var espIp: String? = null
     
     private val _status = MutableStateFlow(ConnectionStatus.DISCONNECTED)
@@ -35,44 +40,74 @@ class EspTcpClient(context: Context) {
 
     fun discoverAndConnect() {
         _status.value = ConnectionStatus.CONNECTING
+        Log.d(TAG, "Starting discovery for $serviceType")
         
-        // Start discovery
         val discoveryListener = object : NsdManager.DiscoveryListener {
-            override fun onDiscoveryStarted(regType: String) {}
+            override fun onDiscoveryStarted(regType: String) {
+                Log.d(TAG, "Service discovery started")
+            }
             override fun onServiceFound(service: NsdServiceInfo) {
-                if (service.serviceName.contains(targetName)) {
+                Log.d(TAG, "Service found: ${service.serviceName} Type: ${service.serviceType}")
+                if (service.serviceName.contains(targetName, ignoreCase = true)) {
+                    Log.d(TAG, "Matching service found, resolving...")
                     nsdManager.resolveService(service, resolveListener)
                 }
             }
             override fun onServiceLost(service: NsdServiceInfo) {
-                if (service.serviceName.contains(targetName)) {
+                Log.d(TAG, "Service lost: ${service.serviceName}")
+                if (service.host?.hostAddress == espIp) {
                     espIp = null
                     disconnect()
                 }
             }
             override fun onDiscoveryStopped(serviceType: String) {}
             override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
-                _status.value = ConnectionStatus.DISCONNECTED
+                Log.e(TAG, "Discovery failed: $errorCode")
             }
             override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {}
         }
 
-        nsdManager.discoverServices(serviceType, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
+        try {
+            nsdManager.discoverServices(serviceType, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting discovery", e)
+        }
         
-        // Start connection loop
+        // Background loop for reconnection and direct IP resolution
         scope.launch {
             while (isActive) {
-                if (espIp != null && (socket == null || socket?.isConnected == false)) {
-                    tryConnect()
+                if (socket == null || socket?.isConnected == false) {
+                    if (espIp == null) {
+                        tryDirectResolution()
+                    }
+                    if (espIp != null) {
+                        tryConnect()
+                    }
                 }
-                delay(3000) // Retry every 3 seconds if not connected
+                delay(5000)
             }
         }
     }
 
+    private fun tryDirectResolution() {
+        try {
+            Log.d(TAG, "Attempting direct resolution for $targetHostname")
+            val address = InetAddress.getByName(targetHostname)
+            if (address.hostAddress != null) {
+                Log.d(TAG, "Direct resolution successful: ${address.hostAddress}")
+                espIp = address.hostAddress
+            }
+        } catch (e: Exception) {
+            // Normal fallback
+        }
+    }
+
     private val resolveListener = object : NsdManager.ResolveListener {
-        override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {}
+        override fun onResolveFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {
+            Log.e(TAG, "Resolve failed: $errorCode")
+        }
         override fun onServiceResolved(serviceInfo: NsdServiceInfo) {
+            Log.d(TAG, "Service resolved via NSD: ${serviceInfo.host.hostAddress}")
             espIp = serviceInfo.host.hostAddress
         }
     }
@@ -81,14 +116,16 @@ class EspTcpClient(context: Context) {
         val ip = espIp ?: return
         withContext(Dispatchers.IO) {
             try {
+                Log.d(TAG, "Connecting to $ip:888...")
                 _status.value = ConnectionStatus.CONNECTING
                 val newSocket = Socket()
                 newSocket.connect(InetSocketAddress(ip, 888), 5000)
                 socket = newSocket
                 outputStream = newSocket.getOutputStream()
                 _status.value = ConnectionStatus.CONNECTED
+                Log.d(TAG, "Connected successfully!")
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Connection failed: ${e.message}")
                 _status.value = ConnectionStatus.DISCONNECTED
                 socket = null
             }
@@ -96,33 +133,42 @@ class EspTcpClient(context: Context) {
     }
 
     private fun disconnect() {
-        try {
-            socket?.close()
-        } catch (e: Exception) {}
+        Log.d(TAG, "Disconnecting...")
+        _status.value = ConnectionStatus.DISCONNECTED
+        
+        val socketToClose = socket
         socket = null
         outputStream = null
-        _status.value = ConnectionStatus.DISCONNECTED
+
+        scope.launch(Dispatchers.IO) {
+            try {
+                socketToClose?.close()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error closing socket", e)
+            }
+        }
     }
 
     suspend fun sendSpell(bitmap: Bitmap?, spell: String) = withContext(Dispatchers.IO) {
         val currentOutput = outputStream
-        if (bitmap == null || currentOutput == null) return@withContext
+        if (bitmap == null || currentOutput == null) {
+            Log.e(TAG, "Cannot send: Socket not connected")
+            return@withContext
+        }
 
         try {
             val bos = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos)
             val bytes = bos.toByteArray()
 
-            val filename = "$spell.png"
-            val filesize = bytes.size
-
-            val header = "PLAYSENDPNG $filename $filesize\n"
+            val header = "PLAYSENDPNG $spell.png ${bytes.size}\n"
             currentOutput.write(header.toByteArray())
             currentOutput.write(bytes)
             currentOutput.flush()
+            Log.d(TAG, "Spell sent!")
         } catch (e: Exception) {
-            e.printStackTrace()
-            disconnect() // Reconnect on next loop iteration
+            Log.e(TAG, "Send failed", e)
+            disconnect()
         }
     }
 }

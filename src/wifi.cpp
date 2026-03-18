@@ -29,6 +29,7 @@ void setupWifi() {
 
   if (MDNS.begin(STAFFNAME)) {
     Serial.println("mDNS gestartet");
+	MDNS.addService("arcane", "tcp", 888);
   }
 }
 
