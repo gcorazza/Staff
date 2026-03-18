@@ -8,12 +8,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -42,18 +47,22 @@ class MainActivity : ComponentActivity(), ArcaneSpeech.SpellListener {
         enableEdgeToEdge()
 
         espClient = EspTcpClient(this)
-        espClient.discover()
+        espClient.discoverAndConnect() // Fixed: method name changed to discoverAndConnect
+        
         arcaneSpeech = ArcaneSpeech(this)
         spellCaster = SpellCaster(espClient)
 
         setContent {
             StaffTheme {
+                val connectionStatus by espClient.status.collectAsState()
+                
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     SpellScreen(
                         modifier = Modifier.padding(innerPadding),
                         isListening = isListening,
                         recognizedSpell = recognizedSpell,
                         spellImage = spellImage,
+                        connectionStatus = connectionStatus,
                         onStartListening = {
                             isListening = true
                             arcaneSpeech.startListening(this)
@@ -84,20 +93,8 @@ class MainActivity : ComponentActivity(), ArcaneSpeech.SpellListener {
         }
     }
 
-    override fun onWakeWordDetected() {
-        // Optional: Provide feedback when wake word is detected
-    }
-
-    override fun onError() {
-        isListening = false
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        val wifi = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val lock = wifi.createMulticastLock("ESP32MDNSLock")
-        if (lock.isHeld) lock.release()
-    }
+    override fun onWakeWordDetected() {}
+    override fun onError() { isListening = false }
 }
 
 @Composable
@@ -106,6 +103,7 @@ fun SpellScreen(
     isListening: Boolean,
     recognizedSpell: String?,
     spellImage: Bitmap?,
+    connectionStatus: ConnectionStatus,
     onStartListening: () -> Unit
 ) {
     Column(
@@ -113,8 +111,51 @@ fun SpellScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Connection Status Indicator
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            val statusColor by animateColorAsState(
+                when (connectionStatus) {
+                    ConnectionStatus.CONNECTED -> Color.Green
+                    ConnectionStatus.CONNECTING -> Color.Yellow
+                    ConnectionStatus.DISCONNECTED -> Color.Red
+                }, label = "statusColor"
+            )
+            
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .clip(CircleShape)
+                    .background(statusColor)
+            )
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            Text(
+                text = when (connectionStatus) {
+                    ConnectionStatus.CONNECTED -> "ESP32 Connected"
+                    ConnectionStatus.CONNECTING -> "Connecting..."
+                    ConnectionStatus.DISCONNECTED -> "ESP32 Disconnected"
+                },
+                style = MaterialTheme.typography.bodyMedium
+            )
+            
+            if (connectionStatus == ConnectionStatus.CONNECTING) {
+                Spacer(modifier = Modifier.width(8.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Button(
             onClick = onStartListening,
+            enabled = connectionStatus == ConnectionStatus.CONNECTED,
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isListening) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
             )

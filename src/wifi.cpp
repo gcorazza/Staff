@@ -1,14 +1,12 @@
 #include <WiFi.h>
 #include "TcpServer.h"
 #include <ESPmDNS.h>
-
-#define NETWORKNAME "Staff"
+#include "globals.h"
 
 const char* ssid = "Gadderbaum";
 const char* password = "isfibeTNG";
 
 TcpServer tcpServer(888);   // Listen on port 888
-
 
 int status;
 
@@ -29,7 +27,7 @@ void setupWifi() {
   Serial.println(status);
   WiFi.begin(ssid, password);
 
-  if (MDNS.begin(NETWORKNAME)) {
+  if (MDNS.begin(STAFFNAME)) {
     Serial.println("mDNS gestartet");
   }
 }
