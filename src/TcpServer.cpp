@@ -2,6 +2,8 @@
 #include "LEDs.h"
 #include <WiFi.h>
 #include <Arduino.h>
+#include "lwip/sockets.h"
+#include "lwip/inet.h"
 
 TcpServer::TcpServer(uint16_t port)
     : server(port),
@@ -17,6 +19,8 @@ void TcpServer::begin() {
     Serial.println("TCP Server started");
 }
 
+int lastHeartbeatTime = 0;
+
 // Call this in loop()
 void TcpServer::handleClient() {
     // Accept new client if none connected
@@ -31,7 +35,11 @@ void TcpServer::handleClient() {
             fileBuffer = nullptr;
         }
         client = server.available();
-        if (client) Serial.println("Client connected");
+        if (client) {
+            Serial.println("Client connected");
+            int optval = 1;
+            setsockopt(client.fd(), SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval));
+        }
         return;
     }
 
@@ -68,6 +76,12 @@ void TcpServer::handleClient() {
             processCommand(inputBuffer);
             inputBuffer = "";
         }
+    }
+
+    //send heartbeat
+    if (millis() - lastHeartbeatTime > 5000) {
+        client.println("HEARTBEAT");
+        lastHeartbeatTime = millis();
     }
 }
 

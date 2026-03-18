@@ -9,10 +9,12 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.SocketTimeoutException
 
 enum class ConnectionStatus {
     DISCONNECTED,
@@ -35,6 +37,7 @@ class EspTcpClient(context: Context) {
     private val nsdManager = context.getSystemService(Context.NSD_SERVICE) as NsdManager
     private var socket: Socket? = null
     private var outputStream: OutputStream? = null
+    private var inputStream: InputStream? = null
     
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -55,7 +58,7 @@ class EspTcpClient(context: Context) {
             }
             override fun onServiceLost(service: NsdServiceInfo) {
                 Log.d(TAG, "Service lost: ${service.serviceName}")
-                if (service.host?.hostAddress == espIp) {
+                if (service.serviceName.contains(targetName, ignoreCase = true)) {
                     espIp = null
                     disconnect()
                 }
@@ -73,10 +76,13 @@ class EspTcpClient(context: Context) {
             Log.e(TAG, "Error starting discovery", e)
         }
         
-        // Background loop for reconnection and direct IP resolution
+        // Background loop for reconnection
         scope.launch {
             while (isActive) {
-                if (socket == null || socket?.isConnected == false) {
+                val currentSocket = socket
+                val needsConnect = currentSocket == null || currentSocket.isClosed || !currentSocket.isConnected
+                
+                if (needsConnect) {
                     if (espIp == null) {
                         tryDirectResolution()
                     }
@@ -118,10 +124,21 @@ class EspTcpClient(context: Context) {
             try {
                 Log.d(TAG, "Connecting to $ip:888...")
                 _status.value = ConnectionStatus.CONNECTING
+                
                 val newSocket = Socket()
+                // TCP Keep-Alive aktivieren (hilft dem OS tote Verbindungen zu finden)
+                newSocket.keepAlive = true
+                // Timeout für Read: Wenn 10 Sek nix kommt -> TimeoutException
+                newSocket.soTimeout = 10000
+                
                 newSocket.connect(InetSocketAddress(ip, 888), 5000)
+                
                 socket = newSocket
                 outputStream = newSocket.getOutputStream()
+                inputStream = newSocket.getInputStream()
+                
+                startReading(newSocket)
+                
                 _status.value = ConnectionStatus.CONNECTED
                 Log.d(TAG, "Connected successfully!")
             } catch (e: Exception) {
@@ -132,17 +149,50 @@ class EspTcpClient(context: Context) {
         }
     }
 
+    private fun startReading(socket: Socket) {
+        scope.launch(Dispatchers.IO) {
+            val input = socket.getInputStream()
+            val buffer = ByteArray(1024)
+            try {
+                while (isActive) {
+                    val bytesRead = try {
+                        input.read(buffer)
+                    } catch (e: SocketTimeoutException) {
+                        // Wenn der ESP länger als 10 Sek schweigt, prüfen wir die Verbindung
+                        Log.d(TAG, "Read timeout: No heartbeat from ESP")
+                        // Optional: Hier könnte man auch -1 erzwingen um Disconnect zu triggern
+                        -1 
+                    }
+
+                    if (bytesRead == -1) {
+                        Log.d(TAG, "Socket read EOF or Timeout (Connection dead)")
+                        disconnect()
+                        break
+                    }
+                    
+                    val receivedData = String(buffer, 0, bytesRead)
+                    Log.d(TAG, "Received from ESP: $receivedData")
+                }
+            } catch (e: Exception) {
+                Log.d(TAG, "Socket read error: ${e.message}")
+                if (isActive) disconnect()
+            }
+        }
+    }
+
     private fun disconnect() {
-        Log.d(TAG, "Disconnecting...")
+        Log.d(TAG, "Disconnecting and updating UI status...")
         _status.value = ConnectionStatus.DISCONNECTED
         
         val socketToClose = socket
         socket = null
         outputStream = null
+        inputStream = null
 
         scope.launch(Dispatchers.IO) {
             try {
                 socketToClose?.close()
+                Log.d(TAG, "Socket closed successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error closing socket", e)
             }
@@ -167,7 +217,7 @@ class EspTcpClient(context: Context) {
             currentOutput.flush()
             Log.d(TAG, "Spell sent!")
         } catch (e: Exception) {
-            Log.e(TAG, "Send failed", e)
+            Log.e(TAG, "Send failed, triggering disconnect", e)
             disconnect()
         }
     }

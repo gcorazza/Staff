@@ -20,7 +20,7 @@ const unsigned long interval = 10000; // 10 Sekunden
 void setup() {
   Serial.begin(115200);
   randomSeed(0);
-  delay(3000);
+  delay(500);
   setupLEDs();
   setupGy();
   setupWifi();
@@ -98,11 +98,11 @@ void printESP(){
 }
 
 void ledAliveAnimation(){
-    if(i == 119){
+    if(i == NUM_LEDS){
       i =0;
     }
     i++;
-    setBulk(leds, 0, 120, CRGB(0,0,0));
+    setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
     setBulk(leds, i, i+1, CRGB(255,255,255));
     FastLED.show();
 }
