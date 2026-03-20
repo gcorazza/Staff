@@ -1,8 +1,28 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.chaquopy)
+    id("com.chaquo.python")
 }
+chaquopy {
+    defaultConfig {
+        pip {
+            install("Pillow")
+        }
+    }
+    productFlavors { }
+    sourceSets { }
+}
+//chaquopy {
+//    defaultConfig {
+//        // Python 3.12 is the latest version supported by Chaquopy 17.0.0.
+//        // This version has pre-built 'Pillow' wheels available.
+//        version = "3.10"
+//
+//        pip {
+//            install("Pillow")
+//        }
+//    }
+//}
 
 android {
     namespace = "de.gianloco.staff"
@@ -16,10 +36,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
+
         ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            abiFilters += listOf("arm64-v8a", "x86_64")
         }
+
     }
 
     buildTypes {

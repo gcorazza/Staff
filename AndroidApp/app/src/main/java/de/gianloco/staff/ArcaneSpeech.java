@@ -63,16 +63,17 @@ public class ArcaneSpeech {
         String text = results.get(0).toLowerCase();
 
         // normalize common misrecognitions
-        text = text.replace("bite", "byte")
-                   .replace("by", "byte");
+//        text = text.replace("bite", "byte")
+//                   .replace("by", "byte");
 
-        if(text.contains("arcane byte")) {
-
-            if(listener != null) listener.onWakeWordDetected();
-
-            String spell = text.replace("arcane byte", "").trim();
-
-            if(listener != null) listener.onSpellRecognized(spell);
-        }
+//        if(text.contains("arcane byte")) {
+//
+//            if(listener != null) listener.onWakeWordDetected();
+//
+//            String spell = text.replace("arcane byte", "").trim();
+//
+//
+//        }
+        if(listener != null) listener.onSpellRecognized(text);
     }
 }

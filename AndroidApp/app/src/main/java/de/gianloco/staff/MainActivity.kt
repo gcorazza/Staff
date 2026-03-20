@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -47,10 +48,10 @@ class MainActivity : ComponentActivity(), ArcaneSpeech.SpellListener {
         enableEdgeToEdge()
 
         espClient = EspTcpClient(this)
-        espClient.discoverAndConnect() // Fixed: method name changed to discoverAndConnect
+        espClient.discoverAndConnect()
         
         arcaneSpeech = ArcaneSpeech(this)
-        spellCaster = SpellCaster(espClient)
+        spellCaster = SpellCaster(this, espClient)
 
         setContent {
             StaffTheme {
@@ -66,6 +67,9 @@ class MainActivity : ComponentActivity(), ArcaneSpeech.SpellListener {
                         onStartListening = {
                             isListening = true
                             arcaneSpeech.startListening(this)
+                        },
+                        onSendWlanPNG = {
+                            espClient.sendWlanPNG()
                         }
                     )
                 }
@@ -90,6 +94,7 @@ class MainActivity : ComponentActivity(), ArcaneSpeech.SpellListener {
         recognizedSpell = spell
         lifecycleScope.launch {
             spellImage = spellCaster.cast(spell)
+            // save image to disk
         }
     }
 
@@ -104,7 +109,8 @@ fun SpellScreen(
     recognizedSpell: String?,
     spellImage: Bitmap?,
     connectionStatus: ConnectionStatus,
-    onStartListening: () -> Unit
+    onStartListening: () -> Unit,
+    onSendWlanPNG: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -161,6 +167,16 @@ fun SpellScreen(
             )
         ) {
             Text(if (isListening) "End Spell" else "Start ArcaneSpeech")
+        }
+
+        Button(
+            onClick = onSendWlanPNG,
+            enabled = connectionStatus == ConnectionStatus.CONNECTED,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (isListening) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Text("Send Wlan PNG")
         }
 
         Spacer(modifier = Modifier.height(32.dp))

@@ -92,7 +92,7 @@ void TcpServer::processCommand(const String& cmd) {
     if (cmd == "STATUS") {
         client.println("OK");
     }
-    else if (cmd.startsWith("PLAYSENDPNG ")) {
+    else if (cmd.startsWith("PLAYPNG ")) {
         // Expected format: SENDFILE filename size
         int firstSpace = cmd.indexOf(' ');
         int secondSpace = cmd.indexOf(' ', firstSpace + 1);

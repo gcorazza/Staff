@@ -2,6 +2,7 @@ package de.gianloco.staff
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.util.Log
@@ -22,7 +23,7 @@ enum class ConnectionStatus {
     CONNECTED
 }
 
-class EspTcpClient(context: Context) {
+class EspTcpClient(private val context: Context) {
 
     private val TAG = "EspTcpClient"
     private val serviceType = "_arcane._tcp."
@@ -126,9 +127,7 @@ class EspTcpClient(context: Context) {
                 _status.value = ConnectionStatus.CONNECTING
                 
                 val newSocket = Socket()
-                // TCP Keep-Alive aktivieren (hilft dem OS tote Verbindungen zu finden)
                 newSocket.keepAlive = true
-                // Timeout für Read: Wenn 10 Sek nix kommt -> TimeoutException
                 newSocket.soTimeout = 10000
                 
                 newSocket.connect(InetSocketAddress(ip, 888), 5000)
@@ -158,10 +157,8 @@ class EspTcpClient(context: Context) {
                     val bytesRead = try {
                         input.read(buffer)
                     } catch (e: SocketTimeoutException) {
-                        // Wenn der ESP länger als 10 Sek schweigt, prüfen wir die Verbindung
                         Log.d(TAG, "Read timeout: No heartbeat from ESP")
-                        // Optional: Hier könnte man auch -1 erzwingen um Disconnect zu triggern
-                        -1 
+                        -1
                     }
 
                     if (bytesRead == -1) {
@@ -210,15 +207,25 @@ class EspTcpClient(context: Context) {
             val bos = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos)
             val bytes = bos.toByteArray()
-
-            val header = "PLAYSENDPNG $spell.png ${bytes.size}\n"
+            val spellWithoutSpace = spell.replace(' ', '_')
+            val header = "PLAYPNG $spellWithoutSpace.png ${bytes.size}\n"
             currentOutput.write(header.toByteArray())
             currentOutput.write(bytes)
             currentOutput.flush()
-            Log.d(TAG, "Spell sent!")
+            Log.d(TAG, "Spell sent! Size: ${bitmap.width}x${bitmap.height}")
         } catch (e: Exception) {
             Log.e(TAG, "Send failed, triggering disconnect", e)
             disconnect()
+        }
+    }
+
+    fun sendWlanPNG() {
+        scope.launch {
+            val options = BitmapFactory.Options().apply {
+                inScaled = false // Deaktiviert die automatische Android-Skalierung
+            }
+            val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.wlan, options)
+            sendSpell(bitmap, "wlan")
         }
     }
 }

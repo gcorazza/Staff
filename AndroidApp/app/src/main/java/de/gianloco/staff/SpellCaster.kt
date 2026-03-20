@@ -1,40 +1,34 @@
 package de.gianloco.staff
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import com.chaquo.python.Python
+import java.io.File
+import java.io.FileOutputStream
 
-class SpellCaster(private val espClient: EspTcpClient) {
-    val spellPrompt= """
-    I am a wizard and you are creating a light effect for my magic wand.
+class SpellCaster(private val context: Context, private val espClient: EspTcpClient) {
+    private val TAG = "SpellCaster"
+
+    private val spellPrompt = """
+    I am a wizard and you are creating a light effect for my magic wand, which has a LED strip.
 
     Create a complete, executable Python script.
 
-    The script should generate an image with exactly 113 pixels in width.
-
-    IMPORTANT – Interpretation of the image:
-    The image is a spatiotemporal map for a 1D LED strip.
-
-    * 113 pixels WIDTH = spatial position of the LEDs (left to right = LED 0 to LED 112)
-    * X pixels HEIGHT = time axis (top to bottom = frame 0 to frame X-1)
-    * Each row represents a moment in time.
-    * Each column represents an LED position.
-    * The image thus describes an animation over X frames for 113 LEDs.
-    * The animation should be 2 seconds long
-    * One second equals 500 pixels
+    The script should generate an image with exactly 118x1000 pixels. 
+    The image is then interpreted as an 1D Video, starting from the top.
 
     Design requirements:
-
-    * Clear, bright colors (suitable for LEDs)
+    * write a function with name "createSpell" that returns a byte array like this  
+        img.save(buf, 'PNG')
+        return buf.getvalue()   
     * Black background (RGB, no alpha)
-    * High contrast
     * No transparency
     * Do not use external image files
     * Use only the standard library or Pillow (PIL)
-    * Save the image as "output.png"
-    * Exactly 113x1000 pixels
     * The code must contain no comments
-    * The effect should be fitting for a magic wand and visually interesting
+    * The most important part: The effect should be fitting for a magic wand and visually interesting
 
     IMPORTANT, because the text is piped directly into a compiler:
     Return **only the complete Python code**.
@@ -44,22 +38,50 @@ class SpellCaster(private val espClient: EspTcpClient) {
     """.trimIndent()
 
     suspend fun cast(spell: String): Bitmap? {
-        val phytonCode = promptAi(spellPrompt + spell)
-        val image = imageFromCode(phytonCode)
-        espClient.sendSpell(image, spell)
-        return image
+        val code = promptAi(spellPrompt + spell)
+
+        try {
+            val scriptFile = File(context.filesDir, "last_spell.py")
+            Log.d("SpellCaster", code)
+            scriptFile.writeText(code)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to save script", e)
+        }
+
+        val bitmap = imageFromCode(code)
+        
+        if (bitmap != null) {
+            saveBitmapToDisk(bitmap, "last_spell_output.png")
+            espClient.sendSpell(bitmap, spell)
+        }
+        
+        return bitmap
     }
 
-    fun imageFromCode(code: String): Bitmap? {
-        val py = Python.getInstance()
-        val globals = py.builtins.callAttr("dict")
-        py.builtins.callAttr("exec", code, globals)
+    private fun imageFromCode(code: String): Bitmap? {
+        return try {
+            val py = Python.getInstance()
 
-        val bytes = py.getModule("io")
-            .callAttr("open", "output.png", "rb")
-            .callAttr("read")
-            .toJava(ByteArray::class.java)
+            val globals = py.builtins.callAttr("dict")
+            py.builtins.callAttr("exec", code, globals)
+            val bytes = globals.callAttr("get", "createSpell")?.call()?.toJava(ByteArray::class.java)
+                ?: return null
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error executing Python spell", e)
+            null
+        }
+    }
 
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    private fun saveBitmapToDisk(bitmap: Bitmap, filename: String) {
+        try {
+            val file = File(context.filesDir, filename)
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+            Log.d(TAG, "Image saved to: ${file.absolutePath}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving bitmap", e)
+        }
     }
 }

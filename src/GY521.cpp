@@ -112,7 +112,7 @@ void loopGy() {
 
     count -= 12;
 
-    printGy();
+    //printGy();
   }
 }
 
