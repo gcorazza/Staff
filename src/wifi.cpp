@@ -9,48 +9,78 @@ const char* password = "isfibeTNG";
 
 TcpServer tcpServer(888);   // Listen on port 888
 
-int status;
+int status = WL_IDLE_STATUS;
 
-//typedef enum {
-//WL_NO_SHIELD = 255,
-//      WL_IDLE_STATUS = 0,
-//      WL_NO_SSID_AVAIL,
-//      WL_SCAN_COMPLETED,
-//      WL_CONNECTED,
-//      WL_CONNECT_FAILED,
-//      WL_CONNECTION_LOST,
-//      WL_DISCONNECTED
-//} wl_status_t;
+namespace {
+unsigned long lastRssiLog = 0;
+constexpr unsigned long RSSI_LOG_INTERVAL_MS = 60000;
+
+const char* statusToString(wl_status_t st) {
+    switch (st) {
+        case WL_IDLE_STATUS: return "IDLE";
+        case WL_NO_SSID_AVAIL: return "NO_SSID";
+        case WL_SCAN_COMPLETED: return "SCAN_DONE";
+        case WL_CONNECTED: return "CONNECTED";
+        case WL_CONNECT_FAILED: return "CONNECT_FAILED";
+        case WL_CONNECTION_LOST: return "CONNECTION_LOST";
+        case WL_DISCONNECTED: return "DISCONNECTED";
+        default: return "UNKNOWN";
+    }
+}
+
+void startWifiConnection(const char* reason) {
+    Serial.print("WiFi reconnect requested: ");
+    Serial.println(reason);
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+}
+}
 
 void setupWifi() {
-  int status = WiFi.status();
+  WiFi.mode(WIFI_STA);
+  status = WiFi.status();
   Serial.print("Wifi Startstate: ");
-  Serial.println(status);
-  WiFi.begin(ssid, password);
+  Serial.print(status);
+  Serial.print(" (");
+  Serial.print(statusToString(static_cast<wl_status_t>(status)));
+  Serial.println(")");
+  if (status != WL_CONNECTED) {
+    startWifiConnection("startup");
+  }
 
   if (MDNS.begin(STAFFNAME)) {
     Serial.println("mDNS gestartet");
-	MDNS.addService("arcane", "tcp", 888);
+    MDNS.addService("arcane", "tcp", 888);
   }
 }
 
 void loopWifi() {
   int statusNow = WiFi.status();
-  //status change
   if (statusNow != status) {
     Serial.print("Wifi status changed: ");
-    Serial.println(statusNow);
+    Serial.print(statusNow);
+    Serial.print(" (");
+    Serial.print(statusToString(static_cast<wl_status_t>(statusNow)));
+    Serial.println(")");
+
     if (statusNow == WL_CONNECTED) {
-	  //drawPNGtoLEDs("/effects/wlanConnected.png");
       Serial.print("Wifi Connected! IP: ");
-      Serial.println(WiFi.localIP());
+      Serial.print(WiFi.localIP());
+      Serial.print(" RSSI: ");
+      Serial.println(WiFi.RSSI());
       tcpServer.begin();
-    }
-    if (statusNow == WL_DISCONNECTED) {
-	  //drawPNGtoLEDs("/effects/wlanDisonnected.png");
-      Serial.println("Wifi Disconnected!\n");
-      WiFi.disconnect();
-      WiFi.begin(ssid, password);
+    } else {
+      switch (statusNow) {
+        case WL_CONNECTION_LOST:
+        case WL_DISCONNECTED:
+        case WL_NO_SSID_AVAIL:
+        case WL_CONNECT_FAILED:
+          startWifiConnection("status change");
+          break;
+        default:
+          break;
+      }
     }
 
     status = statusNow;
@@ -58,6 +88,11 @@ void loopWifi() {
 
   if (status == WL_CONNECTED) {
     tcpServer.handleClient();
+    if (millis() - lastRssiLog > RSSI_LOG_INTERVAL_MS) {
+      lastRssiLog = millis();
+      Serial.print("Wifi RSSI: ");
+      Serial.println(WiFi.RSSI());
+    }
   }
 }
 
