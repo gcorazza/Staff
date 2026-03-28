@@ -19,7 +19,7 @@ void TcpServer::begin() {
     Serial.println("TCP Server started");
 }
 
-int lastHeartbeatTime = 0;
+static unsigned long lastHeartbeatTime = 0;
 
 // Call this in loop()
 void TcpServer::handleClient() {
@@ -80,6 +80,7 @@ void TcpServer::handleClient() {
 
     //send heartbeat
     if (millis() - lastHeartbeatTime > 5000) {
+        Serial.println("Send Heartbeat");
         client.println("HEARTBEAT");
         lastHeartbeatTime = millis();
     }
@@ -93,11 +94,10 @@ void TcpServer::processCommand(const String& cmd) {
         client.println("OK");
     }
     else if (cmd.startsWith("PLAYPNG ")) {
-        // Expected format: SENDFILE filename size
         int firstSpace = cmd.indexOf(' ');
         int secondSpace = cmd.indexOf(' ', firstSpace + 1);
-        if (secondSpace < 0) {
-            client.println("ERROR: Bad SENDFILE format");
+        if (firstSpace < 0 || secondSpace < 0) {
+            client.println("ERROR: Bad PLAYPNG format");
             return;
         }
 
@@ -115,7 +115,6 @@ void TcpServer::processCommand(const String& cmd) {
             fileBuffer = nullptr;
         }
 
-        // Allocate RAM for entire file
         fileBuffer = new uint8_t[fileSize];
         bytesReceived = 0;
         receivingFile = true;

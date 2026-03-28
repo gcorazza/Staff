@@ -1,5 +1,6 @@
 // (c) Michael Schoeffler 2017, http://www.mschoeffler.de
 
+#include "GY521.h"
 #include "Wire.h" // This library allows you to communicate with I2C devices.
 #include <Arduino.h>
 
@@ -116,7 +117,7 @@ void loopGy() {
   }
 }
 
-void printGy(){
+static void printGy(){
   Serial.print("aX:"); Serial.print(accelerometer_x);
   Serial.print(",aY:"); Serial.print(accelerometer_y);
   Serial.print(",aZ:"); Serial.print(accelerometer_z);

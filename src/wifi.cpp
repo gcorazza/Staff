@@ -2,6 +2,7 @@
 #include "TcpServer.h"
 #include <ESPmDNS.h>
 #include "globals.h"
+#include "src/LEDs.h"
 
 const char* ssid = "Gadderbaum";
 const char* password = "isfibeTNG";
@@ -40,12 +41,16 @@ void loopWifi() {
     Serial.print("Wifi status changed: ");
     Serial.println(statusNow);
     if (statusNow == WL_CONNECTED) {
+	  //drawPNGtoLEDs("/effects/wlanConnected.png");
       Serial.print("Wifi Connected! IP: ");
       Serial.println(WiFi.localIP());
       tcpServer.begin();
     }
     if (statusNow == WL_DISCONNECTED) {
+	  //drawPNGtoLEDs("/effects/wlanDisonnected.png");
       Serial.println("Wifi Disconnected!\n");
+      WiFi.disconnect();
+      WiFi.begin(ssid, password);
     }
 
     status = statusNow;

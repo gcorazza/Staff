@@ -27,17 +27,17 @@ void setup() {
   listLittleFS();
   printESP();
   setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
-  drawPNGtoLEDs("/effects/disch.png");
+  FastLED.show();
+  //drawPNGtoLEDs("/effects/disch.png");
 }
 
 void loop() {
-  ledAliveAnimation();
   loopWifi();
   loopGy();
-  StickGesture::Gesture ges = stickGesture.loopGesture();
+  const auto gesture = stickGesture.loopGesture();
 
-  if(ges == StickGesture::Gesture::HitGround){
-	  drawPNGtoLEDs("/effects/disch.png");
+  if (gesture == StickGesture::Gesture::HitGround) {
+      drawPNGtoLEDs("/effects/disch.png");
   }
 
   unsigned long now = millis();
@@ -47,6 +47,7 @@ void loop() {
     Serial.print("Zeit seit Start (ms): ");
     Serial.println(now);
   }
+  delay(10);
 }
 
 

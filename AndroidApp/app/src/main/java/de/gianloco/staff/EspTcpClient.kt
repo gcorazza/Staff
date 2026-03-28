@@ -228,4 +228,14 @@ class EspTcpClient(private val context: Context) {
             sendSpell(bitmap, "wlan")
         }
     }
+
+    fun send1pxPNG() {
+        scope.launch {
+            val options = BitmapFactory.Options().apply {
+                inScaled = false // Deaktiviert die automatische Android-Skalierung
+            }
+            val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable._1px, options)
+            sendSpell(bitmap, "1px")
+        }
+    }
 }

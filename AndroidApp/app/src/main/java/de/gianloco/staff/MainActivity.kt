@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity(), ArcaneSpeech.SpellListener {
                             arcaneSpeech.startListening(this)
                         },
                         onSendWlanPNG = {
-                            espClient.sendWlanPNG()
+                            espClient.send1pxPNG()
                         }
                     )
                 }

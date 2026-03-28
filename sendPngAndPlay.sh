@@ -25,7 +25,7 @@ echo "Sending $FILE ($FILESIZE bytes) to $ESP32_IP:$PORT"
 
 # Send the SENDFILE command first, then file contents
 {
-    printf "PLAYSENDPNG %s %d\n" "$FILENAME" "$FILESIZE"
+    printf "PLAYPNG %s %d\n" "$FILENAME" "$FILESIZE"
     cat "$FILE"
 } | nc -q 0 "$ESP32_IP" "$PORT"
 echo
