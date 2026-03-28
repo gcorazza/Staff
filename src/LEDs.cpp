@@ -3,6 +3,7 @@
 //
 
 #include "LEDs.h"
+#include "lib.h"
 
 File gFile;
 CRGB leds[NUM_LEDS];
@@ -57,6 +58,11 @@ int myDraw(PNGDRAW* draw) {
     return 1;
 }
 
+void turnOffAllLEDs() {
+    setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
+    FastLED.show();
+}
+
 // ---------------- Pixel in NeoPixel schreiben ----------------
 bool drawPNGtoLEDs(const char* filename)
 {
@@ -79,6 +85,7 @@ bool drawPNGtoLEDs(const char* filename)
 
     png.decode(NULL, 0);  // startet komplettes Rendering
     png.close();
+    turnOffAllLEDs();
     return true;
 }
 
@@ -105,6 +112,8 @@ bool drawPNGtoLEDs(uint8_t* buffer, size_t length)
 
     png.decode(NULL, 0);  // startet komplettes Rendering
     png.close();
+    turnOffAllLEDs();
     return true;
 }
+
 

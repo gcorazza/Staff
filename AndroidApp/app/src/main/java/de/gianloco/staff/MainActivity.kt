@@ -70,6 +70,11 @@ class MainActivity : ComponentActivity(), ArcaneSpeech.SpellListener {
                         },
                         onSendWlanPNG = {
                             espClient.send1pxPNG()
+                        },
+                        onSendLsCommand = {
+                            lifecycleScope.launch {
+                                espClient.sendCommand("ls")
+                            }
                         }
                     )
                 }
@@ -110,7 +115,8 @@ fun SpellScreen(
     spellImage: Bitmap?,
     connectionStatus: ConnectionStatus,
     onStartListening: () -> Unit,
-    onSendWlanPNG: () -> Unit
+    onSendWlanPNG: () -> Unit,
+    onSendLsCommand: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -177,6 +183,16 @@ fun SpellScreen(
             )
         ) {
             Text("Send Wlan PNG")
+        }
+
+        Button(
+            onClick = onSendLsCommand,
+            enabled = connectionStatus == ConnectionStatus.CONNECTED,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            )
+        ) {
+            Text("Send 'ls' Command")
         }
 
         Spacer(modifier = Modifier.height(32.dp))

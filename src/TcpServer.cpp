@@ -10,13 +10,18 @@ TcpServer::TcpServer(uint16_t port)
       fileBuffer(nullptr),
       fileSize(0),
       bytesReceived(0),
-      receivingFile(false)
+      receivingFile(false),
+      currentFilename(""),
+      currentStoredFilename(""),
+      currentSaveMode(SaveMode::None),
+      discardIncomingFile(false)
 {
 }
 
 void TcpServer::begin() {
     server.begin();
     Serial.println("TCP Server started");
+    storage.begin();
 }
 
 static unsigned long lastHeartbeatTime = 0;
@@ -30,6 +35,9 @@ void TcpServer::handleClient() {
             Serial.println("Client disconnected");
         }
         receivingFile = false;
+        currentFilename = "";
+        currentStoredFilename = "";
+        currentSaveMode = SaveMode::None;
         if (fileBuffer) {
             delete[] fileBuffer;
             fileBuffer = nullptr;
@@ -45,24 +53,59 @@ void TcpServer::handleClient() {
 
     // Receiving file
     if (receivingFile && client.available()) {
-        int toRead = client.available();
-        if (toRead > fileSize - bytesReceived) toRead = fileSize - bytesReceived;
-
-        int n = client.read(fileBuffer + bytesReceived, toRead); // write directly into buffer
-        if (n > 0) {
-            bytesReceived += n;
-            Serial.printf("Received chunk: %d bytes, total %d/%d\n", n, bytesReceived, fileSize);
+        size_t remaining = fileSize - bytesReceived;
+        int availableBytes = client.available();
+        if (availableBytes > (int)remaining) {
+            availableBytes = static_cast<int>(remaining);
         }
 
-        if (bytesReceived == fileSize) {
-            receivingFile = false;
-            client.println("File received successfully");
-            Serial.println("File fully received");
+        if (discardIncomingFile) {
+            uint8_t sink[256];
+            int toProcess = availableBytes;
+            while (toProcess > 0) {
+                int chunk = toProcess > static_cast<int>(sizeof(sink)) ? static_cast<int>(sizeof(sink)) : toProcess;
+                int n = client.read(sink, chunk);
+                if (n <= 0) {
+                    break;
+                }
+                bytesReceived += n;
+                toProcess -= n;
+            }
 
-            drawPNGtoLEDs(fileBuffer, fileSize);
+            if (bytesReceived == fileSize) {
+                receivingFile = false;
+                discardIncomingFile = false;
+                client.println("IGNORED: Used cached file");
+                Serial.println("Skipped incoming PNG; cached version already rendered");
+            }
+        } else if (fileBuffer != nullptr && availableBytes > 0) {
+            int n = client.read(fileBuffer + bytesReceived, availableBytes);
+            if (n > 0) {
+                bytesReceived += n;
+                Serial.printf("Received chunk: %d bytes, total %d/%d\n", n, bytesReceived, fileSize);
+            }
 
-            delete[] fileBuffer;  // free RAM
-            fileBuffer = nullptr;
+            if (bytesReceived == fileSize) {
+                receivingFile = false;
+                client.println("File received successfully");
+                Serial.println("File fully received");
+
+                drawPNGtoLEDs(fileBuffer, fileSize);
+                String savedPath;
+                if (!storage.saveFile(fileBuffer, fileSize, currentFilename, currentStoredFilename, currentSaveMode, &savedPath)) {
+                    if (currentSaveMode != SaveMode::None) {
+                        client.println("WARNING: Failed to store file");
+                    }
+                } else if (currentSaveMode != SaveMode::None) {
+                    client.println("SAVED: " + savedPath);
+                }
+
+                delete[] fileBuffer;  // free RAM
+                fileBuffer = nullptr;
+                currentFilename = "";
+                currentStoredFilename = "";
+                currentSaveMode = SaveMode::None;
+            }
         }
     }
 
@@ -90,6 +133,15 @@ void TcpServer::handleClient() {
 void TcpServer::processCommand(const String& cmd) {
     Serial.print("Command received: "); Serial.println(cmd);
 
+    if (cmd.equalsIgnoreCase("ls")) {
+        if (client && client.connected()) {
+            storage.listEffects(client);
+        } else {
+            storage.listEffects();
+        }
+        return;
+    }
+
     if (cmd == "STATUS") {
         client.println("OK");
     }
@@ -101,28 +153,89 @@ void TcpServer::processCommand(const String& cmd) {
             return;
         }
 
-        String filename = cmd.substring(firstSpace + 1, secondSpace);
-        String sizeStr = cmd.substring(secondSpace + 1);
-        fileSize = sizeStr.toInt();
+        int thirdSpace = cmd.indexOf(' ', secondSpace + 1);
+        String filename;
+        String sizeStr;
+        String modeStr;
 
+        if (thirdSpace < 0) {
+            sizeStr = cmd.substring(secondSpace + 1);
+            modeStr = "NOSAVE";
+        } else {
+            sizeStr = cmd.substring(secondSpace + 1, thirdSpace);
+            modeStr = cmd.substring(thirdSpace + 1);
+        }
+
+        filename = cmd.substring(firstSpace + 1, secondSpace);
+        sizeStr.trim();
+        modeStr.trim();
+        filename.trim();
+
+        fileSize = sizeStr.toInt();
         if (fileSize <= 0) {
             client.println("ERROR: Invalid size");
             return;
         }
 
-        if (fileBuffer != nullptr) {
-            delete[] fileBuffer;
-            fileBuffer = nullptr;
+        String sanitizedName = storage.sanitizeFilename(filename);
+        if (sanitizedName.isEmpty()) {
+            client.println("ERROR: Invalid filename");
+            return;
         }
 
-        fileBuffer = new uint8_t[fileSize];
+        String modeLower = modeStr;
+        modeLower.toLowerCase();
+        if (modeLower == "nosave" || modeLower == "none") {
+            currentSaveMode = SaveMode::None;
+        } else if (modeLower == "temp" || modeLower == "temporary") {
+            currentSaveMode = SaveMode::Temp;
+        } else if (modeLower == "persistent" || modeLower == "effects" || modeLower == "permanent") {
+            currentSaveMode = SaveMode::Persistent;
+        } else {
+            client.println("ERROR: Unknown save mode");
+            return;
+        }
+
+        String cachedPath;
+        bool usingCached = storage.findExistingFile(sanitizedName, fileSize, &cachedPath);
+
+        if (!usingCached) {
+            currentFilename = sanitizedName;
+            currentStoredFilename = storage.prepareFilename(currentFilename, currentSaveMode);
+
+            if (fileBuffer != nullptr) {
+                delete[] fileBuffer;
+                fileBuffer = nullptr;
+            }
+
+            fileBuffer = new uint8_t[fileSize];
+            discardIncomingFile = false;
+        } else {
+            if (fileBuffer != nullptr) {
+                delete[] fileBuffer;
+                fileBuffer = nullptr;
+            }
+            currentFilename = "";
+            currentStoredFilename = "";
+            currentSaveMode = SaveMode::None;
+            discardIncomingFile = true;
+            drawPNGtoLEDs(cachedPath.c_str());
+            client.println("USING-CACHED: " + cachedPath);
+            Serial.println("Using cached PNG: " + cachedPath);
+        }
+
         bytesReceived = 0;
         receivingFile = true;
 
-        client.println("READY: Receiving " + filename + " (" + String(fileSize) + " bytes)");
-        Serial.println("Receiving file: " + filename + " (" + String(fileSize) + " bytes)");
+        client.println("READY: Receiving " + filename + " (" + String(fileSize) + " bytes) with mode " + modeStr);
+        Serial.println("Receiving file: " + filename + " (" + String(fileSize) + " bytes) mode=" + modeStr);
     }
     else {
         client.println("ERROR: Unknown command");
     }
 }
+
+String TcpServer::getFilename(const String& baseName) {
+    return storage.getFilename(baseName);
+}
+

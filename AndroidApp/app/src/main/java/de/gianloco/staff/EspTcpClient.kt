@@ -23,6 +23,12 @@ enum class ConnectionStatus {
     CONNECTED
 }
 
+enum class SaveMode {
+    NOSAVE,
+    TEMP,
+    PERSISTENT
+}
+
 class EspTcpClient(private val context: Context) {
 
     private val TAG = "EspTcpClient"
@@ -196,7 +202,25 @@ class EspTcpClient(private val context: Context) {
         }
     }
 
-    suspend fun sendSpell(bitmap: Bitmap?, spell: String) = withContext(Dispatchers.IO) {
+    suspend fun sendCommand(command: String) = withContext(Dispatchers.IO) {
+        val currentOutput = outputStream
+        if (currentOutput == null) {
+            Log.e(TAG, "Cannot send command: Socket not connected")
+            return@withContext
+        }
+
+        try {
+            val fullCommand = if (command.endsWith("\n")) command else "$command\n"
+            currentOutput.write(fullCommand.toByteArray())
+            currentOutput.flush()
+            Log.d(TAG, "Command sent: $command")
+        } catch (e: Exception) {
+            Log.e(TAG, "Command send failed", e)
+            disconnect()
+        }
+    }
+
+    suspend fun sendSpell(bitmap: Bitmap?, spell: String, mode: SaveMode = SaveMode.NOSAVE) = withContext(Dispatchers.IO) {
         val currentOutput = outputStream
         if (bitmap == null || currentOutput == null) {
             Log.e(TAG, "Cannot send: Socket not connected")
@@ -208,11 +232,11 @@ class EspTcpClient(private val context: Context) {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos)
             val bytes = bos.toByteArray()
             val spellWithoutSpace = spell.replace(' ', '_')
-            val header = "PLAYPNG $spellWithoutSpace.png ${bytes.size}\n"
+            val header = "PLAYPNG $spellWithoutSpace.png ${bytes.size} ${mode.name.lowercase()}\n"
             currentOutput.write(header.toByteArray())
             currentOutput.write(bytes)
             currentOutput.flush()
-            Log.d(TAG, "Spell sent! Size: ${bitmap.width}x${bitmap.height}")
+            Log.d(TAG, "Spell sent! Size: ${bitmap.width}x${bitmap.height} Mode: ${mode.name}")
         } catch (e: Exception) {
             Log.e(TAG, "Send failed, triggering disconnect", e)
             disconnect()
@@ -225,7 +249,7 @@ class EspTcpClient(private val context: Context) {
                 inScaled = false // Deaktiviert die automatische Android-Skalierung
             }
             val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable.wlan, options)
-            sendSpell(bitmap, "wlan")
+            sendSpell(bitmap, "wlan", SaveMode.NOSAVE)
         }
     }
 
@@ -235,7 +259,7 @@ class EspTcpClient(private val context: Context) {
                 inScaled = false // Deaktiviert die automatische Android-Skalierung
             }
             val bitmap = BitmapFactory.decodeResource(context.resources, R.drawable._1px, options)
-            sendSpell(bitmap, "1px")
+            sendSpell(bitmap, "1px", SaveMode.TEMP)
         }
     }
 }

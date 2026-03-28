@@ -51,8 +51,8 @@ class SpellCaster(private val context: Context, private val espClient: EspTcpCli
         val bitmap = imageFromCode(code)
         
         if (bitmap != null) {
-            saveBitmapToDisk(bitmap, "last_spell_output.png")
-            espClient.sendSpell(bitmap, spell)
+            saveBitmapToDisk(bitmap, "$spell.png")
+            espClient.sendSpell(bitmap, spell, SaveMode.TEMP)
         }
         
         return bitmap

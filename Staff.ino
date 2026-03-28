@@ -8,6 +8,7 @@
 #include "src/wifi.h"
 #include "src/LEDs.h"
 #include "src/StickGesture.h"
+#include "src/EffectStorage.h"
 
 StickGesture stickGesture;
 
@@ -24,11 +25,12 @@ void setup() {
   setupLEDs();
   setupGy();
   setupWifi();
-  listLittleFS();
+  EffectStorage fsInspector;
+  fsInspector.begin();
+  fsInspector.listEffects();
   printESP();
   setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
   FastLED.show();
-  //drawPNGtoLEDs("/effects/disch.png");
 }
 
 void loop() {
@@ -106,22 +108,4 @@ void ledAliveAnimation(){
     setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
     setBulk(leds, i, i+1, CRGB(255,255,255));
     FastLED.show();
-}
-
-
-void listLittleFS() {
-  if (!LittleFS.begin(true)) return;
-
-  Serial.println("Listing LittleFS files:");
-
-  File root = LittleFS.open("/effects");
-  File file = root.openNextFile();
-
-  while (file) {
-    Serial.print("File: ");
-    Serial.print(file.name());
-    Serial.print("  Size: ");
-    Serial.println(file.size());
-    file = root.openNextFile();
-  }
 }
