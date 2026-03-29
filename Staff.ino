@@ -31,6 +31,7 @@ void setup() {
   printESP();
   setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
   FastLED.show();
+  drawPNGtoLEDs("/effects/disch.png");
 }
 
 void loop() {

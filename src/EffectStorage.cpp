@@ -448,11 +448,13 @@ bool EffectStorage::baseNameExists(const char* dir, const String& baseName) cons
 bool EffectStorage::findExistingFile(const String& name, size_t expectedSize, String* outPath) {
     Serial.println(F("[EffectStorage] findExistingFile"));
     if (!ensureLittleFs()) {
+        Serial.println(F("[EffectStorage] findExistingFile: LittleFS not ready"));
         return false;
     }
 
     String sanitized = sanitizeFilename(name);
     if (sanitized.isEmpty()) {
+        Serial.println(F("[EffectStorage] sanitized empty"));
         return false;
     }
 
@@ -462,19 +464,62 @@ bool EffectStorage::findExistingFile(const String& name, size_t expectedSize, St
         if (!f) {
             return false;
         }
-        size_t sz = f.size();
+        bool match = (f.size() == expectedSize);
         f.close();
-        if (sz == expectedSize) {
-            if (outPath) {
-                *outPath = path;
-            }
-            return true;
+        if (match && outPath) {
+            *outPath = path;
         }
-        return false;
+        return match;
+    };
+
+    auto scanTempDir = [&]() -> bool {
+        File dir = LittleFS.open("/tempEffects");
+        if (!dir || !dir.isDirectory()) {
+            if (dir) {
+                dir.close();
+            }
+            return false;
+        }
+
+        bool found = false;
+        File file = dir.openNextFile();
+        while (file) {
+            if (!file.isDirectory()) {
+                String basePart;
+                if (extractIndexFromName(String(file.name()), nullptr, &basePart) &&
+                    basePart == sanitized && file.size() == expectedSize) {
+                    String absolutePath = file.name();
+                    if (!absolutePath.startsWith("/")) {
+                        absolutePath = String("/tempEffects/") + absolutePath;
+                    }
+                    if (outPath) {
+                        *outPath = absolutePath;
+                    }
+                    found = true;
+                    file.close();
+                    break;
+                }
+            }
+            file.close();
+            file = dir.openNextFile();
+        }
+        dir.close();
+        return found;
     };
 
     if (checkDir("/effects")) {
+        Serial.println(F("[EffectStorage] found in /effects"));
         return true;
     }
-    return checkDir("/tempEffects");
+
+    if (checkDir("/tempEffects")) {
+        Serial.println(F("[EffectStorage] found exact in /tempEffects"));
+        return true;
+    }
+
+    bool foundTempNumbered = scanTempDir();
+    if (foundTempNumbered) {
+        Serial.println(F("[EffectStorage] found numbered in /tempEffects"));
+    }
+    return foundTempNumbered;
 }

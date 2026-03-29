@@ -136,9 +136,9 @@ void TcpServer::processCommand(const String& cmd) {
     if (cmd.equalsIgnoreCase("ls")) {
         if (client && client.connected()) {
             storage.listEffects(client);
-        } else {
-            storage.listEffects();
         }
+        // Always print on Serial Bus
+        storage.listEffects();
         return;
     }
 
