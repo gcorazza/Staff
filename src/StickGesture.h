@@ -11,14 +11,25 @@ public:
         // more later
     };
 
+    enum class MovementState {
+        Moving,
+        Still
+    };
+
     StickGesture();
 
     Gesture loopGesture();
+    MovementState getMovementState() const;
 
 private:
     unsigned long lastImpactTime;
+    float lastgyroMagnitude;
+    unsigned long lastMovementTimestamp;
+    MovementState movementState;
 
     float getAccelerationMagnitudeG();
+    float getGyroMagnitudeDps() const;
+    void updateMovementState(float gyroMagnitude, unsigned long now);
 };
 
 #endif

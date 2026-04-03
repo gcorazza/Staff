@@ -9,9 +9,10 @@
 #include "src/LEDs.h"
 #include "src/StickGesture.h"
 #include "src/EffectStorage.h"
+#include "src/effects/IdleAnimation.h"
 
 StickGesture stickGesture;
-
+IdleAnimation idle(leds, NUM_LEDS, 5);
 int i=0;
 
 
@@ -37,7 +38,12 @@ void setup() {
 void loop() {
   loopWifi();
   loopGy();
+
   const auto gesture = stickGesture.loopGesture();
+  idle.updateMovementState(stickGesture.getMovementState());
+  idle.idleAnimation();
+  FastLED.show();
+  setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
 
   if (gesture == StickGesture::Gesture::HitGround) {
       drawPNGtoLEDs("/effects/disch.png");
