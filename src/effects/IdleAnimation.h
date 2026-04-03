@@ -10,14 +10,17 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include "../StickGesture.h"
+#include "Animation.h"
 
-class IdleAnimation {
+class IdleAnimation : public Animation {
 public:
-    IdleAnimation(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive);
+    IdleAnimation(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive, StickGesture* gesture);
     ~IdleAnimation();
 
-    void updateMovementState(StickGesture::MovementState newState);
     void idleAnimation();
+    void loopStep() override { idleAnimation(); }
+    bool isFinished() const override { return false; }
+    bool isInterruptible() const override { return true; }
 
 private:
     struct LedState {
@@ -31,6 +34,7 @@ private:
         float burstMaxRadius;
     };
 
+    void updateMovementState(StickGesture::MovementState newState);
     void startLed(uint16_t index, unsigned long now);
     void runIdleFrame(unsigned long now);
     void runBurstFrame(unsigned long now);
@@ -49,6 +53,7 @@ private:
     unsigned long lastBurstUpdate;
     StickGesture::MovementState currentMovementState;
     StickGesture::MovementState previousMovementState;
+    StickGesture* gesture;
 };
 
 #endif // STAFF_IDLEANIMATION_H

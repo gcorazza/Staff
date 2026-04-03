@@ -64,56 +64,56 @@ void turnOffAllLEDs() {
 }
 
 // ---------------- Pixel in NeoPixel schreiben ----------------
-bool drawPNGtoLEDs(const char* filename)
-{
-    int res = png.open(filename, myOpen, myClose, myRead, mySeek, myDraw);
-    if (res != PNG_SUCCESS) {
-        Serial.println("PNG open failed!");
-        return false;
-    }
+// drawPNGtoLEDs entfernt, da veraltet. Bitte Animator verwenden.
+// bool drawPNGtoLEDs(const char* filename)
+// {
+//     int res = png.open(filename, myOpen, myClose, myRead, mySeek, myDraw);
+//     if (res != PNG_SUCCESS) {
+//         Serial.println("PNG open failed!");
+//         return false;
+//     }
 
-    uint16_t width = png.getWidth();
-    uint16_t height = png.getHeight();
-    if (width != NUM_LEDS) {
-        Serial.print("PNG width = ");
-        Serial.print(width);
-        Serial.print(" != NUM_LEDS = ");
-        Serial.println(NUM_LEDS);
-        png.close();
-        return false;
-    }
+//     uint16_t width = png.getWidth();
+//     uint16_t height = png.getHeight();
+//     if (width != NUM_LEDS) {
+//         Serial.print("PNG width = ");
+//         Serial.print(width);
+//         Serial.print(" != NUM_LEDS = ");
+//         Serial.println(NUM_LEDS);
+//         png.close();
+//         return false;
+//     }
 
-    png.decode(NULL, 0);  // startet komplettes Rendering
-    png.close();
-    turnOffAllLEDs();
-    return true;
-}
+//     png.decode(NULL, 0);  // startet komplettes Rendering
+//     png.close();
+//     turnOffAllLEDs();
+//     return true;
+// }
 
 
 // ---------------- Pixel in NeoPixel schreiben ----------------
-bool drawPNGtoLEDs(uint8_t* buffer, size_t length)
-{
-    int res = png.openRAM(buffer, length, myDraw);
-    if (res != PNG_SUCCESS) {
-        Serial.println("PNG open failed!");
-        return false;
-    }
-
-    uint16_t width = png.getWidth();
-    uint16_t height = png.getHeight();
-    if (width != NUM_LEDS) {
-        Serial.print("PNG width = ");
-        Serial.print(width);
-        Serial.print(" != NUM_LEDS = ");
-        Serial.println(NUM_LEDS);
-        png.close();
-        return false;
-    }
-
-    png.decode(NULL, 0);  // startet komplettes Rendering
-    png.close();
-    turnOffAllLEDs();
-    return true;
-}
-
-
+// drawPNGtoLEDs entfernt, da veraltet. Bitte Animator verwenden.
+// bool drawPNGtoLEDs(uint8_t* buffer, size_t length)
+// {
+//     int res = png.openRAM(buffer, length, myDraw);
+//     if (res != PNG_SUCCESS) {
+//         Serial.println("PNG open failed!");
+//         return false;
+//     }
+//
+//     uint16_t width = png.getWidth();
+//     uint16_t height = png.getHeight();
+//     if (width != NUM_LEDS) {
+//         Serial.print("PNG width = ");
+//         Serial.print(width);
+//         Serial.print(" != NUM_LEDS = ");
+//         Serial.println(NUM_LEDS);
+//         png.close();
+//         return false;
+//     }
+//
+//     png.decode(NULL, 0);  // startet komplettes Rendering
+//     png.close();
+//     turnOffAllLEDs();
+//     return true;
+// }

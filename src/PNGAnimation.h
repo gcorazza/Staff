@@ -1,0 +1,34 @@
+// PNGAnimation.h
+#ifndef STAFF_PNGANIMATION_H
+#define STAFF_PNGANIMATION_H
+
+#include "src/effects/Animation.h"
+#include <PNGdec.h>
+#include <LittleFS.h>
+#include <FastLED.h>
+
+class PNGAnimation : public Animation {
+public:
+    PNGAnimation(const char* filename, CRGB* leds, uint16_t numLeds);
+    PNGAnimation(uint8_t* buffer, size_t length, CRGB* leds, uint16_t numLeds);
+    ~PNGAnimation();
+    void loopStep() override;
+    bool isFinished() const override;
+    bool isInterruptible() const override { return true; }
+private:
+    PNG png;
+    File gFile;
+    uint8_t* buffer = nullptr;
+    size_t bufferLength = 0;
+    CRGB* leds;
+    uint16_t numLeds;
+    String filename;
+    bool finished;
+    int decodeState;
+    bool useBuffer = false;
+    static int myDraw(PNGDRAW* draw);
+    static PNGAnimation* instance;
+};
+
+#endif // STAFF_PNGANIMATION_H
+

@@ -18,6 +18,7 @@ extern File gFile;
 extern CRGB leds[NUM_LEDS];
 extern PNG png;
 
+// drawPNGtoLEDs ist jetzt veraltet, bitte Animator::play verwenden!
 bool drawPNGtoLEDs(const char* filename);
 bool drawPNGtoLEDs(uint8_t* buffer, size_t length);
 void setupLEDs();

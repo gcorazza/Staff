@@ -15,7 +15,7 @@ constexpr float IDLE_BRIGHTNESS_SCALE = 0.25f;
 constexpr float BURST_GROWTH_PER_MS = 0.003f;
 }
 
-IdleAnimation::IdleAnimation(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive)
+IdleAnimation::IdleAnimation(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive, StickGesture* gesture)
     : leds(leds),
       numLeds(numLeds),
       ledsAlive(ledsAlive),
@@ -23,7 +23,8 @@ IdleAnimation::IdleAnimation(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive)
       burstActive(false),
       lastBurstUpdate(0),
       currentMovementState(StickGesture::MovementState::Moving),
-      previousMovementState(StickGesture::MovementState::Moving)
+      previousMovementState(StickGesture::MovementState::Moving),
+      gesture(gesture)
 {
     for (uint16_t i = 0; i < numLeds; i++) {
         states[i].active = false;
@@ -57,8 +58,11 @@ void IdleAnimation::updateMovementState(StickGesture::MovementState newState)
 
 void IdleAnimation::idleAnimation()
 {
+    // Bewegungszustand selbst abfragen und vergleichen
+    if (gesture) {
+        updateMovementState(gesture->getMovementState());
+    }
     const unsigned long now = millis();
-
     if (burstActive) {
         runBurstFrame(now);
         return;
@@ -183,7 +187,6 @@ void IdleAnimation::beginBurst(unsigned long now)
             state.bursting = false;
             continue;
         }
-
         state.bursting = true;
         state.burstRadius = 0.0f;
         state.burstMaxRadius = burstRange;

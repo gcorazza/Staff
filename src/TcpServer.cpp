@@ -1,5 +1,7 @@
 #include "TcpServer.h"
 #include "LEDs.h"
+#include "Animator.h"
+#include "PNGAnimation.h"
 #include <WiFi.h>
 #include <Arduino.h>
 #include "lwip/sockets.h"
@@ -90,7 +92,8 @@ void TcpServer::handleClient() {
                 client.println("File received successfully");
                 Serial.println("File fully received");
 
-                drawPNGtoLEDs(fileBuffer, fileSize);
+                animator.play(std::make_shared<PNGAnimation>(fileBuffer, fileSize, leds, NUM_LEDS), true);
+
                 String savedPath;
                 if (!storage.saveFile(fileBuffer, fileSize, currentFilename, currentStoredFilename, currentSaveMode, &savedPath)) {
                     if (currentSaveMode != SaveMode::None) {
@@ -219,7 +222,8 @@ void TcpServer::processCommand(const String& cmd) {
             currentStoredFilename = "";
             currentSaveMode = SaveMode::None;
             discardIncomingFile = true;
-            drawPNGtoLEDs(cachedPath.c_str());
+            // drawPNGtoLEDs(cachedPath.c_str()); // entfernt, da veraltet
+            animator.play(cachedPath.c_str(), true);
             client.println("USING-CACHED: " + cachedPath);
             Serial.println("Using cached PNG: " + cachedPath);
         }

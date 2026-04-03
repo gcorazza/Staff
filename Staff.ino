@@ -10,9 +10,10 @@
 #include "src/StickGesture.h"
 #include "src/EffectStorage.h"
 #include "src/effects/IdleAnimation.h"
+#include "src/Animator.h"
 
 StickGesture stickGesture;
-IdleAnimation idle(leds, NUM_LEDS, 5);
+Animator animator(leds, NUM_LEDS);
 int i=0;
 
 
@@ -32,21 +33,19 @@ void setup() {
   printESP();
   setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
   FastLED.show();
-  drawPNGtoLEDs("/effects/disch.png");
+  animator.playIdle(leds, NUM_LEDS, 5); // Beispielwert für ledsAlive
 }
 
 void loop() {
   loopWifi();
   loopGy();
-
   const auto gesture = stickGesture.loopGesture();
-  idle.updateMovementState(stickGesture.getMovementState());
-  idle.idleAnimation();
+  animator.loopAnimation();
   FastLED.show();
   setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
 
   if (gesture == StickGesture::Gesture::HitGround) {
-      drawPNGtoLEDs("/effects/disch.png");
+      animator.play("/effects/disch.png", true);
   }
 
   unsigned long now = millis();
