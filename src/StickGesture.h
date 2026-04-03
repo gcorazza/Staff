@@ -7,13 +7,19 @@ class StickGesture {
 public:
     enum class Gesture {
         None,
-        HitGround
-        // more later
+        HitGround,
+		Tap,
+		DoubleTap,
     };
 
     enum class MovementState {
         Moving,
         Still
+    };
+
+    enum class TabState {
+        Idle,
+        FirstTap
     };
 
     StickGesture();
@@ -26,6 +32,10 @@ private:
     float lastgyroMagnitude;
     unsigned long lastMovementTimestamp;
     MovementState movementState;
+
+    // Double Tap
+    TabState tabState;
+    unsigned long lastTabTime;
 
     float getAccelerationMagnitudeG();
     float getGyroMagnitudeDps() const;

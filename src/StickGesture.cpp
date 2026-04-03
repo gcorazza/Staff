@@ -2,15 +2,20 @@
 #include "GY521.h"
 
 #define ACCEL_SCALE          16384.0f   // MPU6050 ±2g
-#define IMPACT_THRESHOLD_G   2.5f
 #define IMPACT_COOLDOWN_MS   400
 #define GYRO_MOVEMENT_THRESHOLD_DPS 50.0f
 #define STILLNESS_TIMEOUT_MS 2000UL
+#define IMPACT_THRESHOLD_G_HIT   2.5f
+#define IMPACT_THRESHOLD_G_TAB   1.2f
+#define DOUBLE_TAP_MIN_MS        200
+#define DOUBLE_TAP_MAX_MS        400
 
 StickGesture::StickGesture()
     : lastImpactTime(0),
+      lastTabTime(0),
       lastMovementTimestamp(0),
-      movementState(MovementState::Moving)
+      movementState(MovementState::Moving),
+      tabState(TabState::Idle)
 {
 }
 
@@ -39,7 +44,32 @@ StickGesture::Gesture StickGesture::loopGesture()
 
     updateMovementState(gyroMag, now);
 
-    if (accMag > IMPACT_THRESHOLD_G)
+    // Double Tap Detection
+    switch (tabState) {
+        case TabState::Idle:
+            if (accMag > IMPACT_THRESHOLD_G_TAB && accMag < IMPACT_THRESHOLD_G_HIT) {
+                lastTabTime = now;
+                tabState = TabState::FirstTap;
+				return Gesture::Tap;
+            }
+            break;
+        case TabState::FirstTap:
+            if (now - lastTabTime > DOUBLE_TAP_MAX_MS) {
+                tabState = TabState::Idle;
+            } else if (accMag > IMPACT_THRESHOLD_G_TAB && accMag < IMPACT_THRESHOLD_G_HIT) {
+                unsigned long dt = now - lastTabTime;
+                if (dt >= DOUBLE_TAP_MIN_MS && dt <= DOUBLE_TAP_MAX_MS) {
+                    tabState = TabState::Idle;
+                    lastTabTime = 0;
+                    Serial.println(F("[StickGesture] DoubleTap detected!"));
+                    return Gesture::DoubleTap;
+                }
+            }
+            break;
+    }
+
+    // HitGround Detection (wie bisher)
+    if (accMag > IMPACT_THRESHOLD_G_HIT)
     {
         if (now - lastImpactTime > IMPACT_COOLDOWN_MS)
         {
