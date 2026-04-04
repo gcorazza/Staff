@@ -2,6 +2,7 @@
 // Implementierung der Animator-Klasse
 
 #include "Animator.h"
+#include "effects/DebugAnimation.h"
 #include "effects/IdleAnimation.h"
 #include "LEDs.h"
 #include "PNGAnimation.h"
@@ -18,6 +19,7 @@ void Animator::loopAnimation() {
     if (stack.empty()) return;
     auto& anim = stack.back();
     anim->loopStep();
+    FastLED.show();
     if (anim->isFinished()) {
         popAnimation();
     }
@@ -37,7 +39,8 @@ void Animator::play(const char* filename, bool interruptible) {
 }
 
 void Animator::playIdle(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive) {
-    ensureIdle(leds, numLeds, ledsAlive);
+    auto anim = std::make_shared<IdleAnimation>(leds, numLeds, ledsAlive, &stickGesture);
+    play(anim, true); // Idle ist immer interruptible
 }
 
 void Animator::ensureIdle(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive) {
@@ -46,7 +49,13 @@ void Animator::ensureIdle(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive) {
     }
 }
 
+void Animator::playDebugAnimation() {
+    auto anim = std::make_shared<DebugAnimation>(leds, numLeds);
+    play(anim, true); // Debug ist immer interruptible
+}
+
 void Animator::pushAnimation(std::shared_ptr<Animation> anim, bool /*interruptible*/) {
+    anim->animationStart();
     stack.push_back(anim);
 }
 

@@ -31,9 +31,9 @@ void setup() {
   fsInspector.begin();
   fsInspector.listEffects();
   printESP();
-  setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
-  FastLED.show();
-  animator.playIdle(leds, NUM_LEDS, 5); // Beispielwert für ledsAlive
+  turnOffAllLEDs();
+  animator.playIdle(leds, NUM_LEDS, 10);
+  //animator.playDebugAnimation();
 }
 
 void loop() {
@@ -41,7 +41,6 @@ void loop() {
   loopGy();
   const auto gesture = stickGesture.loopGesture();
   animator.loopAnimation();
-  FastLED.show();
   setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
 
   if (gesture == StickGesture::Gesture::HitGround) {
@@ -115,3 +114,4 @@ void ledAliveAnimation(){
     setBulk(leds, i, i+1, CRGB(255,255,255));
     FastLED.show();
 }
+

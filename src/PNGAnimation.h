@@ -7,6 +7,12 @@
 #include <LittleFS.h>
 #include <FastLED.h>
 
+// PNG callback functions
+void* myOpen(const char* filename, int32_t* filesize);
+void myClose(void* handle);
+int32_t myRead(PNGFILE *pFile, uint8_t *pBuf, int32_t iLen);
+int32_t mySeek(PNGFILE *pFile, int32_t iPosition);
+
 class PNGAnimation : public Animation {
 public:
     PNGAnimation(const char* filename, CRGB* leds, uint16_t numLeds);

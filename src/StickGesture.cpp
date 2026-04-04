@@ -5,10 +5,10 @@
 #define IMPACT_COOLDOWN_MS   400
 #define GYRO_MOVEMENT_THRESHOLD_DPS 50.0f
 #define STILLNESS_TIMEOUT_MS 2000UL
-#define IMPACT_THRESHOLD_G_HIT   2.5f
+#define IMPACT_THRESHOLD_G_HIT   5.5f
 #define IMPACT_THRESHOLD_G_TAB   1.2f
-#define DOUBLE_TAP_MIN_MS        200
-#define DOUBLE_TAP_MAX_MS        400
+#define DOUBLE_TAP_MIN_MS        300
+#define DOUBLE_TAP_MAX_MS        500
 
 StickGesture::StickGesture()
     : lastImpactTime(0),
@@ -44,18 +44,19 @@ StickGesture::Gesture StickGesture::loopGesture()
 
     updateMovementState(gyroMag, now);
 
-    // Double Tap Detection
+    // (Double) Tap Detection
     switch (tabState) {
         case TabState::Idle:
             if (accMag > IMPACT_THRESHOLD_G_TAB && accMag < IMPACT_THRESHOLD_G_HIT) {
                 lastTabTime = now;
                 tabState = TabState::FirstTap;
-				return Gesture::Tap;
             }
             break;
         case TabState::FirstTap:
             if (now - lastTabTime > DOUBLE_TAP_MAX_MS) {
                 tabState = TabState::Idle;
+                Serial.println(F("[StickGesture] Tap detected!"));
+				return Gesture::Tap;
             } else if (accMag > IMPACT_THRESHOLD_G_TAB && accMag < IMPACT_THRESHOLD_G_HIT) {
                 unsigned long dt = now - lastTabTime;
                 if (dt >= DOUBLE_TAP_MIN_MS && dt <= DOUBLE_TAP_MAX_MS) {
@@ -93,12 +94,17 @@ void StickGesture::updateMovementState(float gyroMagnitude, unsigned long now)
         lastgyroMagnitude = gyroMagnitude;
     }
 
+    //for testing
+	if (lastgyroMagnitude - gyroMagnitude > 1.2){
+       Serial.println("[StickGesture] Big Gyro magnitude: " + String(lastgyroMagnitude - gyroMagnitude));
+       Serial.print("gyro_magnitude:"); Serial.println(lastgyroMagnitude - gyroMagnitude);
+    }
+
     const bool currentlyMoving = abs(lastgyroMagnitude - gyroMagnitude) >= GYRO_MOVEMENT_THRESHOLD_DPS;
 	lastgyroMagnitude = gyroMagnitude;
 
     if (currentlyMoving)
     {
-        Serial.println("[StickGesture] Movement detected. Gyro magnitude: " + String(gyroMagnitude));
         lastMovementTimestamp = now;
         if (movementState == MovementState::Still)
         {

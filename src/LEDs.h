@@ -7,20 +7,14 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
-#include <PNGdec.h>
-#include <LittleFS.h>
 #include "src/globals.h"
 
 
 #define LED_DATA_PIN 23
 
-extern File gFile;
 extern CRGB leds[NUM_LEDS];
-extern PNG png;
 
-// drawPNGtoLEDs ist jetzt veraltet, bitte Animator::play verwenden!
-bool drawPNGtoLEDs(const char* filename);
-bool drawPNGtoLEDs(uint8_t* buffer, size_t length);
 void setupLEDs();
+void turnOffAllLEDs();
 
 #endif // STAFF_LEDS_H

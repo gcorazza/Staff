@@ -3,8 +3,14 @@
 //
 
 #include "IdleAnimation.h"
+#include "../LEDs.h"
 
 #include <math.h>
+#include <vector>
+#include <algorithm>
+
+#define MOVING_SHOT_START_B 64
+#define MOVING_SHOT_START_A (NUM_LEDS - 50)
 
 namespace {
 constexpr uint8_t IDLE_FADE_AMOUNT = 40;
@@ -13,6 +19,8 @@ constexpr uint8_t MAX_BURST_RANGE = 10;
 constexpr uint8_t MIN_BURST_RANGE = 1;
 constexpr float IDLE_BRIGHTNESS_SCALE = 0.25f;
 constexpr float BURST_GROWTH_PER_MS = 0.003f;
+constexpr uint8_t MOVING_SHOOT_AMOUNT = 4;
+constexpr uint16_t MOVING_FADE_TIME = 600;
 }
 
 IdleAnimation::IdleAnimation(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive, StickGesture* gesture)
@@ -63,11 +71,16 @@ void IdleAnimation::idleAnimation()
         updateMovementState(gesture->getMovementState());
     }
     const unsigned long now = millis();
+
+    // Burst hat immer Vorrang!
     if (burstActive) {
         runBurstFrame(now);
         return;
     }
-
+    if (currentMovementState == StickGesture::MovementState::Moving) {
+        runMovingFrame(now);
+        return;
+    }
     runIdleFrame(now);
 }
 
@@ -255,5 +268,53 @@ CRGB IdleAnimation::applyBrightness(const CRGB& color, float scale)
         static_cast<uint8_t>(color.r * scale),
         static_cast<uint8_t>(color.g * scale),
         static_cast<uint8_t>(color.b * scale)
+    );
+}
+
+void IdleAnimation::runMovingFrame(unsigned long now)
+{
+    fadeToBlackBy(leds, numLeds, IDLE_FADE_AMOUNT);
+
+    // Schüsse erzeugen
+    if (now - lastShotTime > 1000 / MOVING_SHOOT_AMOUNT) {
+        for (int dir = 0; dir < 2; ++dir) {
+            MovingShot shot;
+            shot.position = (dir == 0) ? MOVING_SHOT_START_A : MOVING_SHOT_START_B;
+            shot.speed = random(20, 60) / 10.0f; // 2.0 bis 6.0 LEDs/Sekunde
+            shot.color = CHSV(random8(), 255, 255);
+            shot.startTime = now;
+            shot.directionUp = (dir == 0);
+            shot.active = true;
+            movingShots.push_back(shot);
+        }
+        lastShotTime = now;
+    }
+
+    // Schüsse animieren
+    for (auto& shot : movingShots) {
+        if (!shot.active) continue;
+        float elapsed = (now - shot.startTime) / 1000.0f;
+        float distance = shot.speed * elapsed;
+        // Richtung beachten:
+        shot.position = shot.directionUp ? (MOVING_SHOT_START_A + distance) : (MOVING_SHOT_START_B - distance);
+
+        // Fade-Out berechnen
+        float fade = 1.0f - float(now - shot.startTime) / MOVING_FADE_TIME;
+        if (fade < 0.0f) fade = 0.0f;
+
+        CRGB fadedColor = shot.color;
+        fadedColor.nscale8(uint8_t(fade * 255));
+        setLedChecked(shot.position, fadedColor);
+
+        // Deaktivieren, wenn außerhalb oder ausgeblendet
+        if (shot.position < 0 || shot.position >= numLeds || fade <= 0.0f) {
+            shot.active = false;
+        }
+    }
+
+    // Inaktive Schüsse entfernen
+    movingShots.erase(
+        std::remove_if(movingShots.begin(), movingShots.end(), [](const MovingShot& s) { return !s.active; }),
+        movingShots.end()
     );
 }

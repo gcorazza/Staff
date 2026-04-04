@@ -11,6 +11,7 @@
 #include <FastLED.h>
 #include "../StickGesture.h"
 #include "Animation.h"
+#include <vector>
 
 class IdleAnimation : public Animation {
 public:
@@ -34,11 +35,21 @@ private:
         float burstMaxRadius;
     };
 
+    struct MovingShot {
+        float position;
+        float speed;
+        CRGB color;
+        unsigned long startTime;
+        bool directionUp;
+        bool active;
+    };
+
     void updateMovementState(StickGesture::MovementState newState);
     void startLed(uint16_t index, unsigned long now);
     void runIdleFrame(unsigned long now);
     void runBurstFrame(unsigned long now);
     void beginBurst(unsigned long now);
+    void runMovingFrame(unsigned long now);
     uint8_t brightnessFromColor(const CRGB& color) const;
     uint8_t computeBurstRange(uint8_t brightness) const;
     void setLedChecked(float index, const CRGB& color);
@@ -51,10 +62,14 @@ private:
 
     bool burstActive;
     unsigned long lastBurstUpdate;
+    std::vector<MovingShot> movingShots;
+    unsigned long lastShotTime = 0;
     StickGesture::MovementState currentMovementState;
     StickGesture::MovementState previousMovementState;
     StickGesture* gesture;
 };
+
+#include "DebugAnimation.h"
 
 #endif // STAFF_IDLEANIMATION_H
 

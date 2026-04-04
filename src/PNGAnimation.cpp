@@ -2,11 +2,33 @@
 #include "LEDs.h"
 #include <Arduino.h>
 
-extern void* myOpen(const char* filename, int32_t* filesize);
-extern void myClose(void* handle);
-extern int32_t myRead(PNGFILE *pFile, uint8_t *pBuf, int32_t iLen);
-extern int32_t mySeek(PNGFILE *pFile, int32_t iPosition);
-extern int myDraw(PNGDRAW* draw);
+// PNG callback functions
+static File gFile;
+
+void* myOpen(const char* filename, int32_t* filesize)
+{
+    gFile = LittleFS.open(filename, "rb");
+    if (!gFile) return NULL;
+    *filesize = gFile.size();
+    return &gFile;
+}
+
+void myClose(void* handle){
+    File* f = (File*)handle;
+    f->close();
+}
+
+int32_t myRead(PNGFILE *pFile, uint8_t *pBuf, int32_t iLen){
+    File *f = (File *)pFile->fHandle;
+    return f->read(pBuf, iLen);
+}
+
+int32_t mySeek(PNGFILE *pFile, int32_t iPosition)
+{
+    File *f = (File *)pFile->fHandle;
+    if (!f->seek(iPosition)) return -1;
+    return f->position();
+}
 
 PNGAnimation* PNGAnimation::instance = nullptr;
 
@@ -80,6 +102,5 @@ int PNGAnimation::myDraw(PNGDRAW* draw) {
         uint8_t b = p[x * 3 + 2];
         instance->leds[x] = CRGB(r, g, b);
     }
-    FastLED.show();
     return 1;
 }

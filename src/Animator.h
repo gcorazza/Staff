@@ -18,6 +18,7 @@ public:
     void play(std::shared_ptr<Animation> anim, bool interruptible);
     void play(const char* filename, bool interruptible); // PNG
     void playIdle(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive);
+    void playDebugAnimation();
     bool isIdleActive() const;
 
 private:

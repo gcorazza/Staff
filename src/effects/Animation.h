@@ -10,7 +10,7 @@ public:
     virtual void loopStep() = 0;
     virtual bool isFinished() const = 0;
     virtual bool isInterruptible() const = 0;
+    virtual void animationStart() {}
 };
 
 #endif // STAFF_ANIMATION_H
-
