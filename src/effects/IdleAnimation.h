@@ -11,7 +11,9 @@
 #include <FastLED.h>
 #include "../StickGesture.h"
 #include "Animation.h"
-#include <vector>
+#include "IdleStillAnimation.h"
+#include "IdleMovingAnimation.h"
+#include "AnimationTools.h"
 
 class IdleAnimation : public Animation {
 public:
@@ -22,51 +24,28 @@ public:
     CRGB* loopStep() override { idleAnimation(); return leds; }
     bool isFinished() const override { return false; }
     bool isInterruptible() const override { return true; }
+    void stop() override {}
 
 private:
-    struct LedState {
-        bool active;
-        unsigned long startTime;
-        unsigned long duration;
-        CRGB currentColor;
-        uint8_t currentBrightness;
-        bool bursting;
-        float burstRadius;
-        float burstMaxRadius;
-    };
-
-    struct MovingShot {
-        float position;
-        float speed;
-        CRGB color;
-        unsigned long startTime;
-        bool directionUp;
-        bool active;
-    };
-
     void updateMovementState(StickGesture::MovementState newState);
-    void startLed(uint16_t index, unsigned long now);
-    void runIdleFrame(unsigned long now);
-    void runBurstFrame(unsigned long now);
-    void beginBurst(unsigned long now);
-    void runMovingFrame(unsigned long now);
-    uint8_t brightnessFromColor(const CRGB& color) const;
-    uint8_t computeBurstRange(uint8_t brightness) const;
-    void setLedChecked(float index, const CRGB& color);
-    CRGB applyBrightness(const CRGB& color, float scale);
 
     CRGB* leds;
+    CRGB* stillBuffer;
+    CRGB* movingBuffer;
     uint16_t numLeds;
     uint8_t ledsAlive;
-    LedState* states;
 
-    bool burstActive;
-    unsigned long lastBurstUpdate;
-    std::vector<MovingShot> movingShots;
-    unsigned long lastShotTime = 0;
+    IdleStillAnimation* stillAnimation;
+    IdleMovingAnimation* movingAnimation;
+
     StickGesture::MovementState currentMovementState;
     StickGesture::MovementState previousMovementState;
     StickGesture* gesture;
+
+    // Transition state
+    bool isTransitioning;
+    unsigned long transitionStartTime;
+    static constexpr unsigned long TRANSITION_DURATION_MS = 2000;
 };
 
 #include "DebugAnimation.h"

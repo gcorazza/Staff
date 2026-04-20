@@ -94,6 +94,10 @@ bool PNGAnimation::isFinished() const {
     return finished;
 }
 
+void PNGAnimation::stop() {
+    finished = true;
+}
+
 int PNGAnimation::myDraw(PNGDRAW* draw) {
     if (!instance) return 0;
     uint8_t* p = draw->pPixels;

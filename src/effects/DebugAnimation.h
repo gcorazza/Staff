@@ -11,6 +11,7 @@ public:
     bool isFinished() const override;
     bool isInterruptible() const override;
     void animationStart() override;
+    void stop() override;
 private:
     CRGB* leds;
     uint16_t numLeds;

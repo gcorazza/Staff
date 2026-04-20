@@ -33,3 +33,4 @@ CRGB* DebugAnimation::loopStep() {
 
 bool DebugAnimation::isFinished() const { return false; }
 bool DebugAnimation::isInterruptible() const { return true; }
+void DebugAnimation::stop() {}

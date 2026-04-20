@@ -18,3 +18,12 @@ void AnimationTools::blend(CRGB* array1, CRGB* array2, CRGB* output, uint16_t nu
         output[i] = blend(array1[i], array2[i], blendAmount);
     }
 }
+
+void AnimationTools::add(CRGB* array1, CRGB* array2, CRGB* output, uint16_t numLeds) {
+    for (uint16_t i = 0; i < numLeds; i++) {
+        // Add each channel and clamp at 255
+        output[i].r = qadd8(array1[i].r, array2[i].r);
+        output[i].g = qadd8(array1[i].g, array2[i].g);
+        output[i].b = qadd8(array1[i].b, array2[i].b);
+    }
+}
