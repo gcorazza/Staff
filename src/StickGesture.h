@@ -26,6 +26,7 @@ public:
 
     Gesture loopGesture();
     MovementState getMovementState() const;
+    float getAccelerationMagnitudeG();
 
 private:
     unsigned long lastImpactTime;
@@ -37,7 +38,6 @@ private:
     TabState tabState;
     unsigned long lastTabTime;
 
-    float getAccelerationMagnitudeG();
     float getGyroMagnitudeDps() const;
     void updateMovementState(float gyroMagnitude, unsigned long now);
 };

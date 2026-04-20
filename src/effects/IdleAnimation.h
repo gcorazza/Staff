@@ -24,6 +24,7 @@ public:
     CRGB* loopStep() override { idleAnimation(); return leds; }
     bool isFinished() const override { return false; }
     bool isInterruptible() const override { return true; }
+    void animationStart() override {}
     void stop() override {}
 
 private:

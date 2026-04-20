@@ -22,6 +22,7 @@ public:
     bool isFinished() const override;
     bool isInterruptible() const override { return true; }
     void stop() override;
+	void animationStart() override {};
 private:
     PNG png;
     File gFile;

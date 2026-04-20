@@ -18,6 +18,7 @@ public:
     CRGB* loopStep() override;
     bool isFinished() const override;
     bool isInterruptible() const override { return true; }
+    void animationStart() override;
     void stop() override;
 
     void beginBurst(unsigned long now);

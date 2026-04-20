@@ -4,7 +4,6 @@
 #include <LittleFS.h>
 #include "src/GY521.h"
 #include "src/globals.h"
-#include "src/lib.h"
 #include "src/wifi.h"
 #include "src/LEDs.h"
 #include "src/StickGesture.h"
@@ -14,8 +13,6 @@
 
 StickGesture stickGesture;
 Animator animator(leds, NUM_LEDS);
-int i=0;
-
 
 unsigned long lastPrint = 0;
 const unsigned long interval = 10000; // 10 Sekunden
@@ -41,7 +38,6 @@ void loop() {
   loopGy();
   const auto gesture = stickGesture.loopGesture();
   animator.loopAnimation();
-  setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
 
   if (gesture == StickGesture::Gesture::HitGround) {
       animator.play("/effects/disch.png", true);
@@ -103,15 +99,5 @@ void printESP(){
   Serial.println(ESP.getChipModel());
   Serial.println(ESP.getChipRevision());
   Serial.println(ESP.getSdkVersion());
-}
-
-void ledAliveAnimation(){
-    if(i == NUM_LEDS){
-      i =0;
-    }
-    i++;
-    setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
-    setBulk(leds, i, i+1, CRGB(255,255,255));
-    FastLED.show();
 }
 

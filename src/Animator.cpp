@@ -22,6 +22,7 @@ void Animator::loopAnimation() {
     // Copy returned LEDs to global leds array
     memcpy(leds, animLeds, numLeds * sizeof(CRGB));
     FastLED.show();
+	turnOffAllLEDs();
     if (anim->isFinished()) {
         popAnimation();
     }

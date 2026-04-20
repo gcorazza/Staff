@@ -9,27 +9,37 @@
 #include <FastLED.h>
 #include <vector>
 #include "Animation.h"
+#include "../StickGesture.h"
 
 class IdleMovingAnimation : public Animation {
 public:
-    IdleMovingAnimation(CRGB* leds, uint16_t numLeds);
+    IdleMovingAnimation(CRGB* leds, uint16_t numLeds, StickGesture* gesture);
     ~IdleMovingAnimation() = default;
 
     // Animation interface
     CRGB* loopStep() override;
     bool isFinished() const override;
     bool isInterruptible() const override { return true; }
+    void animationStart() override;
     void stop() override;
 
     void render(unsigned long now);
 
 private:
     struct MovingShot {
-        float position;
-        float speed;
+        float startPosition;
+        float speed;  // Positive = up, Negative = down
         CRGB color;
         unsigned long startTime;
-        bool directionUp;
+        uint16_t fadeTime;  // Fade duration in milliseconds
+        bool active;
+    };
+
+    struct Spawner {
+        float position;
+        float speed;  // Positive = up, Negative = down
+        unsigned long lastUpdate;
+        unsigned long lastShotTime;
         bool active;
     };
 
@@ -38,7 +48,10 @@ private:
 
     CRGB* leds;
     uint16_t numLeds;
+    StickGesture* gesture;
     std::vector<MovingShot> movingShots;
+    Spawner spawner;
+    unsigned long animationStartTime;
     unsigned long lastShotTime;
     bool shouldStop;
     bool hasStopped;

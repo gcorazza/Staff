@@ -3,7 +3,6 @@
 //
 
 #include "LEDs.h"
-#include "lib.h"
 
 CRGB leds[NUM_LEDS];
 
@@ -12,8 +11,7 @@ void setupLEDs() {
 }
 
 void turnOffAllLEDs() {
-    setBulk(leds, 0, NUM_LEDS, CRGB(0,0,0));
-    FastLED.show();
+    for (int i = 0; i < NUM_LEDS; i++) {
+    	leds[i] = CRGB::Black;
+  	}
 }
-
-

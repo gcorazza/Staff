@@ -12,7 +12,7 @@ IdleAnimation::IdleAnimation(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive, St
       numLeds(numLeds),
       ledsAlive(ledsAlive),
       stillAnimation(new IdleStillAnimation(stillBuffer, numLeds, ledsAlive)),
-      movingAnimation(new IdleMovingAnimation(movingBuffer, numLeds)),
+      movingAnimation(new IdleMovingAnimation(movingBuffer, numLeds, gesture)),
       currentMovementState(StickGesture::MovementState::Moving),
       previousMovementState(StickGesture::MovementState::Moving),
       gesture(gesture),
@@ -51,11 +51,13 @@ void IdleAnimation::updateMovementState(StickGesture::MovementState newState)
             stillAnimation->beginBurst(millis());
         }
 
-        // Tell the old animation to stop gracefully
+        // Tell the old animation to stop gracefully and start the new one
         if (currentMovementState == StickGesture::MovementState::Still) {
             movingAnimation->stop();
+            stillAnimation->animationStart();
         } else {
             stillAnimation->stop();
+            movingAnimation->animationStart();
         }
     }
 }
@@ -87,7 +89,7 @@ void IdleAnimation::idleAnimation()
             // Reset the finished animation for next time
             if (currentMovementState == StickGesture::MovementState::Still) {
                 delete movingAnimation;
-                movingAnimation = new IdleMovingAnimation(movingBuffer, numLeds);
+                movingAnimation = new IdleMovingAnimation(movingBuffer, numLeds, gesture);
             } else {
                 delete stillAnimation;
                 stillAnimation = new IdleStillAnimation(stillBuffer, numLeds, ledsAlive);

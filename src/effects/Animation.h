@@ -12,7 +12,7 @@ public:
     virtual CRGB* loopStep() = 0;
     virtual bool isFinished() const = 0;
     virtual bool isInterruptible() const = 0;
-    virtual void animationStart() {}
+    virtual void animationStart() = 0;  // Called when animation starts/restarts
     virtual void stop() = 0;  // Gracefully stop the animation (e.g., don't spawn new elements)
 };
 

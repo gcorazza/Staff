@@ -52,6 +52,12 @@ bool IdleStillAnimation::isFinished() const
     return hasStopped;
 }
 
+void IdleStillAnimation::animationStart()
+{
+    shouldStop = false;
+    hasStopped = false;
+}
+
 void IdleStillAnimation::stop()
 {
     shouldStop = true;
