@@ -19,7 +19,7 @@ public:
     ~IdleAnimation();
 
     void idleAnimation();
-    void loopStep() override { idleAnimation(); }
+    CRGB* loopStep() override { idleAnimation(); return leds; }
     bool isFinished() const override { return false; }
     bool isInterruptible() const override { return true; }
 

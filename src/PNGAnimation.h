@@ -18,7 +18,7 @@ public:
     PNGAnimation(const char* filename, CRGB* leds, uint16_t numLeds);
     PNGAnimation(uint8_t* buffer, size_t length, CRGB* leds, uint16_t numLeds);
     ~PNGAnimation();
-    void loopStep() override;
+    CRGB* loopStep() override;
     bool isFinished() const override;
     bool isInterruptible() const override { return true; }
 private:

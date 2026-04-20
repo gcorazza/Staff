@@ -18,7 +18,9 @@ Animator::Animator(CRGB* leds, uint16_t numLeds)
 void Animator::loopAnimation() {
     if (stack.empty()) return;
     auto& anim = stack.back();
-    anim->loopStep();
+    CRGB* animLeds = anim->loopStep();
+    // Copy returned LEDs to global leds array
+    memcpy(leds, animLeds, numLeds * sizeof(CRGB));
     FastLED.show();
     if (anim->isFinished()) {
         popAnimation();

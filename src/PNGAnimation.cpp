@@ -78,8 +78,8 @@ PNGAnimation::~PNGAnimation() {
     instance = nullptr;
 }
 
-void PNGAnimation::loopStep() {
-    if (finished) return;
+CRGB* PNGAnimation::loopStep() {
+    if (finished) return leds;
     int res = png.decode(NULL, 1); // 1 Zeile pro Aufruf
     if (res == 0) { // PNG_DONE == 0 laut PNGdec
         finished = true;
@@ -87,6 +87,7 @@ void PNGAnimation::loopStep() {
         Serial.println("PNG decode error!");
         finished = true;
     }
+    return leds;
 }
 
 bool PNGAnimation::isFinished() const {

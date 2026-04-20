@@ -13,7 +13,7 @@ void DebugAnimation::animationStart() {
 
 }
 
-void DebugAnimation::loopStep() {
+CRGB* DebugAnimation::loopStep() {
 
     for (uint16_t i = 0; i < numLeds; ++i) {
         switch (i % 3) {
@@ -28,6 +28,7 @@ void DebugAnimation::loopStep() {
         leds[NUM_LEDS-1] = CRGB::White;
     }
 
+    return leds;
 }
 
 bool DebugAnimation::isFinished() const { return false; }

@@ -7,7 +7,7 @@
 class DebugAnimation : public Animation {
 public:
     DebugAnimation(CRGB* leds, uint16_t numLeds);
-    void loopStep() override;
+    CRGB* loopStep() override;
     bool isFinished() const override;
     bool isInterruptible() const override;
     void animationStart() override;

@@ -13,14 +13,14 @@
 #define MOVING_SHOT_START_A (NUM_LEDS - 50)
 
 namespace {
-constexpr uint8_t IDLE_FADE_AMOUNT = 40;
+constexpr uint8_t IDLE_FADE_AMOUNT = 10;
 constexpr uint8_t BURST_FADE_AMOUNT = 80;
 constexpr uint8_t MAX_BURST_RANGE = 10;
 constexpr uint8_t MIN_BURST_RANGE = 1;
 constexpr float IDLE_BRIGHTNESS_SCALE = 0.25f;
 constexpr float BURST_GROWTH_PER_MS = 0.003f;
 constexpr uint8_t MOVING_SHOOT_AMOUNT = 4;
-constexpr uint16_t MOVING_FADE_TIME = 600;
+constexpr uint16_t MOVING_FADE_TIME = 2000;
 }
 
 IdleAnimation::IdleAnimation(CRGB* leds, uint16_t numLeds, uint8_t ledsAlive, StickGesture* gesture)
@@ -280,8 +280,8 @@ void IdleAnimation::runMovingFrame(unsigned long now)
         for (int dir = 0; dir < 2; ++dir) {
             MovingShot shot;
             shot.position = (dir == 0) ? MOVING_SHOT_START_A : MOVING_SHOT_START_B;
-            shot.speed = random(20, 60) / 10.0f; // 2.0 bis 6.0 LEDs/Sekunde
-            shot.color = CHSV(random8(), 255, 255);
+            shot.speed = random(60, 200) / 10.0f; // 2.0 bis 6.0 LEDs/Sekunde
+            shot.color = CHSV(255/2-10 + random(0, 20), 50, 255);
             shot.startTime = now;
             shot.directionUp = (dir == 0);
             shot.active = true;
